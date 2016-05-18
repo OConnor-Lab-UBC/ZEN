@@ -15,6 +15,12 @@
 ###################################################################################
 # TABLE OF CONTENTS                                                               #
 #                                                                                 #
+# METADATA                                                                        #
+# LOAD PACKAGES                                                                   #
+# READ IN AND PREPARE DATA                                                        #
+# SUMMARIZE MESOGRAZER RICHNESS AND OUTPUT SPECIES X PLOT MATRIX                  #
+# ASSEMBLE DATA FRAMES INTO A MASTER DATA SET                                     #
+#                                                                                 #
 ###################################################################################
 
 ###################################################################################
@@ -111,7 +117,7 @@ epifauna_clean <- droplevels(subset(epifauna_clean, Sampling.Time == "1"))
 
 
 ###################################################################################
-# SUMMARIZE MESOGRAZER ESTIMATED RICHNESS BY PLOT AND SITE                        #
+# SUMMARIZE MESOGRAZER RICHNESS AND OUTPUT SPECIES X PLOT MATRIX                  #
 ###################################################################################
 
 # Create a dataframe with biomass of MESOGRAZER SPECIES as columns
