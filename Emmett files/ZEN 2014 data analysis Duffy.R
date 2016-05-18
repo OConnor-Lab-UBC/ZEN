@@ -450,6 +450,69 @@ hist(ZEN_2014_site_means$amphipod.survival.24hr.site, col = "cyan")
 # EXPLORE DATA COMPLETENESS                                                       #
 ###################################################################################
 
+# NOTE: AIC comparisons among models are invalid unless exactly the same number of plots
+# are used in each comparison, because the DF influences calculation of the AIC score. 
+# This means that we need data on all plots and might need to impute missing data for 
+# valid AIC model comparisons. 
+
+# How many observations are missing for each variable?
+sum(is.na(ZEN_2014_master_data$log10.Zostera.AG.mass)) # 24
+sum(is.na(ZEN_2014_master_data$log10.Zostera.shoots.core)) # 15
+sum(is.na(ZEN_2014_master_data$Zostera.longest.leaf.length)) # 0
+# sum(is.na(ZEN_2014_master_data$pct.cover.macroalgae)) # 20
+# sum(is.na(ZEN_2014_master_data$pct.cover.seagrass)) # 20
+sum(is.na(ZEN_2014_master_data$grazer.richness.site)) # 0
+sum(is.na(ZEN_2014_master_data$Leaf.PercN)) # 14
+sum(is.na(ZEN_2014_master_data$Temperature.C)) # 0
+sum(is.na(ZEN_2014_master_data$Salinity.ppt)) # 0
+sum(is.na(ZEN_2014_master_data$Day.length.hours)) # 0
+sum(is.na(ZEN_2014_master_data$Perc.Sand)) # 420
+sum(is.na(ZEN_2014_master_data$GenotypicRichness)) # 0
+sum(is.na(ZEN_2014_master_data$AllelicRichness)) # 0 
+sum(is.na(ZEN_2014_master_data$Inbreeding)) # 0
+sum(is.na(ZEN_2014_master_data$log10.periphyton.mass.per.g.zostera)) # 36
+sum(is.na(ZEN_2014_master_data$log10.mesograzer.abund.per.g.plant)) # 22
+sum(is.na(ZEN_2014_master_data$log10.crustacean.abund.per.g.plant)) # 22
+sum(is.na(ZEN_2014_master_data$log10.gastropod.abund.per.g.plant)) # 22
+sum(is.na(ZEN_2014_master_data$amphipod.survival.24hr)) # 191
+
+# How many observations are available for each variable?
+sum(!is.na(ZEN_2014_master_data$log10.Zostera.AG.mass)) # 976
+sum(!is.na(ZEN_2014_master_data$log10.Zostera.shoots.core)) # 985
+sum(!is.na(ZEN_2014_master_data$Zostera.longest.leaf.length)) # 1000
+# sum(!is.na(ZEN_2014_master_data$pct.cover.macroalgae)) # 968
+# sum(!is.na(ZEN_2014_master_data$pct.cover.seagrass)) # 968
+sum(!is.na(ZEN_2014_master_data$grazer.richness.site)) # 1000
+sum(!is.na(ZEN_2014_master_data$amphipod.survival.24hr)) # 809
+sum(!is.na(ZEN_2014_master_data$squid.survival.24hr)) # 976
+sum(!is.na(ZEN_2014_master_data$Leaf.PercN)) # 986
+sum(!is.na(ZEN_2014_master_data$Temperature.C)) # 1000
+sum(!is.na(ZEN_2014_master_data$Salinity.ppt)) # 1000
+sum(!is.na(ZEN_2014_master_data$Day.length.hours)) # 1000
+sum(!is.na(ZEN_2014_master_data$Perc.Sand)) # 580
+sum(!is.na(ZEN_2014_master_data$GenotypicRichness)) # 1000
+sum(!is.na(ZEN_2014_master_data$AllelicRichness)) # 1000
+sum(!is.na(ZEN_2014_master_data$Inbreeding)) # 1000
+sum(!is.na(ZEN_2014_master_data$log10.periphyton.mass.per.g.zostera)) # 964
+sum(!is.na(ZEN_2014_master_data$log10.mesograzer.abund.per.g.plant)) # 978
+sum(!is.na(ZEN_2014_master_data$log10.crustacean.abund.per.g.plant)) # 978
+sum(!is.na(ZEN_2014_master_data$log10.gastropod.abund.per.g.plant)) # 978
+sum(!is.na(ZEN_2014_master_data$amphipod.survival.24hr)) # 809
+
+# NOTE: One big reason analyses below are dropping so many plots is because nearly
+# half are missing data for sediment grain size. So let's omit grain size until this is fixed.
+
+# Look at percentage of values missing for each variable
+# First create function to calculate % of missing values infor each variable in a data frame… 
+pMiss <- function(x){sum(is.na(x))/length(x)*100}
+# Now apply it to the data frame: 
+apply(ZEN_2014_master_data,2,pMiss)
+
+# Some relevant results:
+#   Most variables have fewer < 4% missing -  good. 
+#   Exception is predation data since many sites did not have one or another tupe of grazer
+#   sediment grain size (e.g., Perc.Sand = 42.510121)
+
 
 
 
