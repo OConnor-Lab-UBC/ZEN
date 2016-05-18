@@ -33,16 +33,26 @@ ZENverts <- read.csv("../Emmett files/ZEN_2014_mesograzers_2016-05-17.csv")
 head(ZENverts)
 names(ZENverts)
 
-### identify sites by their coast
-site.names <- as.vector(levels(unique(ZENverts$Site)))
+### identify sites by their coast and create a merged file
 site.geog <- read.csv("../site data/geography.csv")
 site.geog$Site <- paste(site.geog$Site.code, site.geog$locale, sep = '.')
 lat.long <- read.csv("../site data/ZEN_2014_Lat&Long.csv")
 site.info <- merge(site.geog, lat.long, by = 'Site')
-write.csv(site.info, 'siteinfo.csv')
 
-## remove columns
-sites <- aggregate(ZENverts[,-c(1:3, 201:202)], list(ZENverts$Site), sum)
+plot.info <- plot[,1:5] 
+plot.geog <- merge(plot.info, site.info, by = 'Site')
+
+write.csv(site.info, 'siteinfo.csv')
+write.csv(plot.geog, 'plotgeog.csv')
+
+ZENverts.sites <- merge(site.info, ZENverts, by = 'Site')
+
+
+## group sites by ocean basin
+sitesP <- ZENverts.sites[(ZENverts.sites$Ocean=='Pacific'),]
+
+## remove columns, collapse plots by site
+sites <- aggregate(sitesP[,-c(1:16, 214:215)], list(sitesP$Site), sum)
 sites[sites > 0] <- 1
 dim(sites)
 str(sites)
