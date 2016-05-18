@@ -109,13 +109,68 @@ names(epifauna_clean)
 # Remove Sampling.Time = 2
 epifauna_clean <- droplevels(subset(epifauna_clean, Sampling.Time == "1"))
 
+
+###################################################################################
+# SUMMARIZE MESOGRAZER ESTIMATED RICHNESS BY PLOT AND SITE                        #
+###################################################################################
+
+# Create a dataframe with biomass of MESOGRAZER SPECIES as columns
+# Melt the dataframe so that each SPECIES is a row:
+
+names(epifauna_clean)
+
 # Remove any non-grazers
 grazers <- droplevels(subset(epifauna_clean, Type == "Mesograzer"))
 levels(grazers$Type) # good
 
-mesograzers <- melt(grazers, id.var = c("Site", "Plot.ID", "Unique.ID","Species"), measure.var = c("Total.Abundance"))
+mesograzers <- melt(grazers, id.var = c("Site", "Plot.ID", "unique.ID","Species"), measure.var = c("Total.Abundance"))
 # Cast the molten data frame so that each SPECIES is a column across the top:
-mesograzers <- dcast(mesograzers, Site + Plot.ID + Unique.ID ~ Species, sum)
+mesograzers <- dcast(mesograzers, Site + Plot.ID + unique.ID ~ Species, sum)
 str(mesograzers)
 names(mesograzers)
+
+# Export data frame as csv file: grazer species x plot ID matrix:
+write.csv(mesograzers, "ZEN_2014_mesograzers_2016-05-17.csv", row.names = F)
+
+
+# Create variable: PLOT-level grazer richness
+mesograzers$richness.plot = 
+  rowSums(mesograzers[, !colnames(mesograzers) %in% c("Site", "Plot.ID", "unique.ID")] > 0, na.rm = T)
+
+# Create variable: SITE-level grazer richness 
+richness.site <- ddply(mesograzers, c("Site"), function(x) {
+  # Sum abundances 
+  sum.x = colSums(x[, !colnames(x) %in% c("Site", "Plot.ID", "unique.ID")], na.rm = T)
+  # Get richness
+  sum(sum.x > 0, na.rm = T)
+})
+
+# change name of newly created variable 
+colnames(richness.site)[2] <- c("richness.site")
+
+# Create a dataframe with the richness values by site
+temp <- mesograzers[c("Site", "Plot.ID", "unique.ID", "richness.plot")]
+grazer.richness <- merge(temp, richness.site, by = c("Site"))
+names(grazer.richness)
+
+
+###################################################################################
+# ASSEMBLE DATA FRAMES INTO A MASTER DATA SET                                     #
+###################################################################################
+
+# Ensure all different variables have unique, consistent, and unambiguous names
+
+names(grazer.richness)
+colnames(grazer.richness)[4:5] <- c("grazer.richness.plot", "grazer.richness.site") 
+
+# Bind the data frames into a master data frame
+ZEN_2014_master_data = ZEN_2014_plot_data
+ZEN_2014_master_data$grazer.richness.plot <- grazer.richness$grazer.richness.plot[match(ZEN_2014_master_data$Site, grazer.richness$Site)]
+ZEN_2014_master_data$grazer.richness.site <- grazer.richness$grazer.richness.site[match(ZEN_2014_master_data$Site, grazer.richness$Site)]
+
+names(ZEN_2014_master_data)
+
+
+
+
 
