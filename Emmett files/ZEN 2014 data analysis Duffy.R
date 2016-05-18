@@ -302,6 +302,154 @@ write.csv(ZEN_2014_master_data, "ZEN_2014_master_data_2016-05-17.csv", row.names
 # OBTAIN SITE MEANS                                                               #
 ###################################################################################
 
+# Obtain mean values per site
+ZEN_2014_site_means <- ddply(ZEN_2014_master_data, c("Site"), summarize, 
+                             Zostera.AG.mass.site = mean(Zostera.aboveground.mean.mass, na.rm = T), 
+                             # macroalgae.total.AG.mass.core.site = mean(macroalgae.aboveground.mean.mass, na.rm = T),                      
+                             # seagrass.othersp.AG.mass.site = mean(seagrass.aboveground.mean.mass, na.rm = T),                      
+                             macrophytes.total.AG.mass.core.site = mean(total.macrophytes.aboveground.mean.mass, na.rm = T),                      
+                             Zostera.BG.mass.site = mean(Zostera.belowground.mean.mass, na.rm = T),                      
+                             # macrophytes.total.BG.mass.core.site = mean(total.macrophytes.belowground.mean.mass, na.rm = T),                      
+                             Zostera.shoots.core.site = mean(Zostera.shoots.per.m2.core, na.rm = T),                      
+                             Zostera.sheath.width.site = mean(Zostera.sheath.width, na.rm = T),                      
+                             Zostera.sheath.length.site = mean(Zostera.sheath.length, na.rm = T),                      
+                             Zostera.longest.leaf.length.site = mean(Zostera.longest.leaf.length, na.rm = T),                      
+                             # pct.cover.macroalgae.site = mean(pct.cover.macroalgae, na.rm = T),                      
+                             # pct.cover.seagrass.site = mean(pct.cover.seagrass, na.rm = T),                      
+                             periphyton.mass.per.g.zostera.site = mean(periphyton.mass.per.g.zostera, na.rm = T),                      
+                             
+                             mesograzer.abund.per.g.plant.site = mean(mesograzer.abund.per.g.plant, na.rm = T),                      
+                             crustacean.abund.per.g.plant.site = mean(crustacean.abund.per.g.plant, na.rm = T), 
+                             amphipod.abund.per.g.plant.site = mean(amphipod.abund.per.g.plant, na.rm = T), 
+                             gammarid.abund.per.g.plant.site = mean(gammarid.abund.per.g.plant, na.rm = T), 
+                             caprellid.abund.per.g.plant.site = mean(caprellid.abund.per.g.plant, na.rm = T), 
+                             isopod.abund.per.g.plant.site = mean(isopod.abund.per.g.plant, na.rm = T), 
+                             gastropod.abund.per.g.plant.site = mean(gastropod.abund.per.g.plant, na.rm = T), 
+                             # polychaete.abund.per.g.plant.site = mean(polychaete.abund.per.g.plant, na.rm = T), 
+                             
+                             mesograzer.mass.per.g.plant.site = mean(mesograzer.mass.per.g.plant, na.rm = T),                      
+                             crustacean.mass.per.g.plant.site = mean(crustacean.mass.per.g.plant, na.rm = T), 
+                             amphipod.mass.per.g.plant.site = mean(amphipod.mass.per.g.plant, na.rm = T), 
+                             gammarid.mass.per.g.plant.site = mean(gammarid.mass.per.g.plant, na.rm = T), 
+                             caprellid.mass.per.g.plant.site = mean(caprellid.mass.per.g.plant, na.rm = T), 
+                             isopod.mass.per.g.plant.site = mean(isopod.mass.per.g.plant, na.rm = T), 
+                             gastropod.mass.per.g.plant.site = mean(gastropod.mass.per.g.plant, na.rm = T), 
+                             # polychaete.mass.per.g.plant.site = mean(polychaete.mass.per.g.plant, na.rm = T), 
+                             
+                             crustacean.mean.body.mass.site = mean(crustacean.mean.body.mass, na.rm = T), 
+                             log10.crustacean.mean.body.mass.site = mean(log10.crustacean.mean.body.mass, na.rm = T), 
+                             gastropod.mean.body.mass.site = mean(gastropod.mean.body.mass, na.rm = T), 
+                             log10.gastropod.mean.body.mass.site = mean(log10.gastropod.mean.body.mass, na.rm = T), 
+                             mesograzer.mean.body.mass.site = mean(mesograzer.mean.body.mass, na.rm = T), 
+                             log10.mesograzer.mean.body.mass.site = mean(log10.mesograzer.mean.body.mass, na.rm = T), 
+                             
+                             grazer.richness.plot.site = mean(grazer.richness.plot, na.rm = T), 
+                             amphipod.survival.24hr.site = mean(amphipod.survival.24hr, na.rm = T), 
+                             gastropod.survival.24hr.site = mean(gastropod.survival.24hr, na.rm = T), 
+                             squid.survival.24hr.site = mean(squid.survival.24hr, na.rm = T), 
+                             Leaf.PercN.site = mean(Leaf.PercN, na.rm = T), 
+                             
+                             log10.Zostera.AG.mass.site = mean(log10.Zostera.AG.mass, na.rm = T), 
+                             log10.macrophytes.total.AG.mass.core.site = mean(log10.macrophytes.total.AG.mass.core, na.rm = T), 
+                             log10.Zostera.BG.mass.site = mean(log10.Zostera.BG.mass, na.rm = T), 
+                             log10.Zostera.shoots.core.site = mean(log10.Zostera.shoots.core, na.rm = T), 
+                             log10.Zostera.sheath.width.site = mean(log10.Zostera.sheath.width, na.rm = T), 
+                             log10.Zostera.sheath.length.site = mean(log10.Zostera.sheath.length, na.rm = T), 
+                             log10.Zostera.longest.leaf.length.cm.site = mean(log10.Zostera.longest.leaf.length, na.rm = T), 
+                             # log10.pct.cover.macroalgae.site = mean(log10.pct.cover.macroalgae, na.rm = T), 
+                             # log10.pct.cover.seagrass.site = mean(log10.pct.cover.seagrass, na.rm = T), 
+                             log10.periphyton.mass.per.g.zostera.site = mean(log10.periphyton.mass.per.g.zostera, na.rm = T), 
+                             
+                             log10.mesograzer.abund.per.g.plant.site = mean(log10.mesograzer.abund.per.g.plant, na.rm = T), 
+                             log10.crustacean.abund.per.g.plant.site = mean(log10.crustacean.abund.per.g.plant, na.rm = T), 
+                             log10.amphipod.abund.per.g.plant.site = mean(log10.amphipod.abund.per.g.plant, na.rm = T), 
+                             log10.gammarid.abund.per.g.plant.site = mean(log10.gammarid.abund.per.g.plant, na.rm = T), 
+                             log10.gastropod.abund.per.g.plant.site = mean(log10.gastropod.abund.per.g.plant, na.rm = T), 
+                             
+                             log10.mesograzer.mass.per.g.plant.site = mean(log10.mesograzer.mass.per.g.plant, na.rm = T), 
+                             log10.crustacean.mass.per.g.plant.site = mean(log10.crustacean.mass.per.g.plant, na.rm = T), 
+                             log10.amphipod.mass.per.g.plant.site = mean(log10.amphipod.mass.per.g.plant, na.rm = T), 
+                             log10.gammarid.mass.per.g.plant.site = mean(log10.gammarid.mass.per.g.plant, na.rm = T), 
+                             log10.gastropod.mass.per.g.plant.site = mean(log10.gastropod.mass.per.g.plant, na.rm = T), 
+                             
+                             log10.grazer.richness.plot.site = mean(log10.grazer.richness.plot, na.rm = T), 
+                             log10.Leaf.PercN.site = mean(log10.Leaf.PercN, na.rm = T) 
+)
+
+# Change values of NaN to NA:
+ZEN_2014_site_means[ZEN_2014_site_means == "NaN"] = NA 
+
+# Add site-level environmental variables back in
+ZEN_2014_site_means$Ocean <- ZEN_2014_master_data$Ocean[match(ZEN_2014_site_means$Site, ZEN_2014_master_data$Site)]
+ZEN_2014_site_means$Coast <- ZEN_2014_master_data$Coast[match(ZEN_2014_site_means$Site, ZEN_2014_master_data$Site)]
+ZEN_2014_site_means$Latitude <- ZEN_2014_master_data$Latitude[match(ZEN_2014_site_means$Site, ZEN_2014_master_data$Site)]
+ZEN_2014_site_means$Longitude <- ZEN_2014_master_data$Longitude[match(ZEN_2014_site_means$Site, ZEN_2014_master_data$Site)]
+ZEN_2014_site_means$Temperature.C <- ZEN_2014_master_data$Temperature.C[match(ZEN_2014_site_means$Site, ZEN_2014_master_data$Site)]
+ZEN_2014_site_means$Salinity.ppt <- ZEN_2014_master_data$Salinity.ppt[match(ZEN_2014_site_means$Site, ZEN_2014_master_data$Site)]
+ZEN_2014_site_means$Day.length.hours <- ZEN_2014_master_data$Day.length.hours[match(ZEN_2014_site_means$Site, ZEN_2014_master_data$Site)]
+ZEN_2014_site_means$Depth.Categorical <- ZEN_2014_master_data$Depth.Categorical[match(ZEN_2014_site_means$Site, ZEN_2014_master_data$Site)]
+ZEN_2014_site_means$Depth.m <- ZEN_2014_master_data$Depth.m[match(ZEN_2014_site_means$Site, ZEN_2014_master_data$Site)]
+ZEN_2014_site_means$Perc.Silt <- ZEN_2014_master_data$Perc.Silt[match(ZEN_2014_site_means$Site, ZEN_2014_master_data$Site)]
+ZEN_2014_site_means$Perc.Sand <- ZEN_2014_master_data$Perc.Sand[match(ZEN_2014_site_means$Site, ZEN_2014_master_data$Site)]
+ZEN_2014_site_means$Perc.Gravel <- ZEN_2014_master_data$Perc.Gravel[match(ZEN_2014_site_means$Site, ZEN_2014_master_data$Site)]
+ZEN_2014_site_means$GenotypicRichness <- ZEN_2014_master_data$GenotypicRichness[match(ZEN_2014_site_means$Site, ZEN_2014_master_data$Site)]
+ZEN_2014_site_means$AllelicRichness <- ZEN_2014_master_data$AllelicRichness[match(ZEN_2014_site_means$Site, ZEN_2014_master_data$Site)]
+ZEN_2014_site_means$Inbreeding <- ZEN_2014_master_data$Inbreeding[match(ZEN_2014_site_means$Site, ZEN_2014_master_data$Site)]
+ZEN_2014_site_means$log10.GenotypicRichness <- ZEN_2014_master_data$log10.GenotypicRichness[match(ZEN_2014_site_means$Site, ZEN_2014_master_data$Site)]
+ZEN_2014_site_means$log10.AllelicRichness <- ZEN_2014_master_data$log10.AllelicRichness[match(ZEN_2014_site_means$Site, ZEN_2014_master_data$Site)]
+ZEN_2014_site_means$grazer.richness.site <- ZEN_2014_master_data$grazer.richness.site[match(ZEN_2014_site_means$Site, ZEN_2014_master_data$Site)]
+ZEN_2014_site_means$log10.grazer.richness.site <- ZEN_2014_master_data$log10.grazer.richness.site[match(ZEN_2014_site_means$Site, ZEN_2014_master_data$Site)]
+
+ZEN_2014_site_means$grazer.estimated.richness.site <- ZEN_2014_master_data$grazer.estimated.richness.site[match(ZEN_2014_site_means$Site, ZEN_2014_master_data$Site)]
+ZEN_2014_site_means$grazer.estimated.Shannon.diversity.site <- ZEN_2014_master_data$grazer.estimated.Shannon.diversity.site[match(ZEN_2014_site_means$Site, ZEN_2014_master_data$Site)]
+ZEN_2014_site_means$grazer.estimated.Simpson.diversity.site <- ZEN_2014_master_data$grazer.estimated.Simpson.diversity.site[match(ZEN_2014_site_means$Site, ZEN_2014_master_data$Site)]
+ZEN_2014_site_means$log10.grazer.estimated.richness.site <- ZEN_2014_master_data$log10.grazer.estimated.richness.site[match(ZEN_2014_site_means$Site, ZEN_2014_master_data$Site)]
+ZEN_2014_site_means$log10.grazer.estimated.Shannon.diversity.site <- ZEN_2014_master_data$log10.grazer.estimated.Shannon.diversity.site[match(ZEN_2014_site_means$Site, ZEN_2014_master_data$Site)]
+ZEN_2014_site_means$log10.grazer.estimated.Simpson.diversity.site <- ZEN_2014_master_data$log10.grazer.estimated.Simpson.diversity.site[match(ZEN_2014_site_means$Site, ZEN_2014_master_data$Site)]
+
+names(ZEN_2014_site_means)
+
+# Export the data frame
+write.csv(ZEN_2014_site_means, "ZEN_2014_site_means_2016-05-18.csv", row.names = F)
+
+# Create subset of site means for only Atlantic
+
+# Create separate data sets for Atlantic and Pacific sites (subsite summary)
+ZEN_2014_site_means.Atl <- droplevels(subset(ZEN_2014_site_means, Ocean == "Atlantic"))
+ZEN_2014_site_means.Pac <- droplevels(subset(ZEN_2014_site_means, Ocean == "Pacific"))
+
+
+###################################################################################
+# EXPLORE DISTRIBUTIONS OF VARIABLES (SITE LEVEL)                                 #
+###################################################################################
+
+names(ZEN_2014_site_means)
+
+# Examine frequency distribution of sites by environmental factor
+# par(mfrow = c(1,1))
+par(mfrow = c(2,4))
+hist(ZEN_2014_site_means$Latitude, col = "cyan", main = "Surveys by latitude")    
+hist(ZEN_2014_site_means$Longitude, col = "cyan", main = "Surveys by longitude")    
+hist(ZEN_2014_site_means$Temperature.C, col = "cyan", main = "Surveys by temperature")    
+hist(ZEN_2014_site_means$Salinity.ppt, col = "cyan", main = "Surveys by salinity")    
+
+# hist(ZEN_2014_site_means$Depth.m, col = "cyan")    
+
+hist(ZEN_2014_site_means$log10.Zostera.AG.mass.site, col = "cyan")    
+hist(ZEN_2014_site_means$log10.macrophytes.total.AG.mass.core.site, col = "cyan")    
+hist(ZEN_2014_site_means$log10.Zostera.shoots.core.site, col = "cyan")    
+hist(ZEN_2014_site_means$log10.periphyton.mass.per.g.zostera.site, col = "cyan")    
+
+hist(ZEN_2014_site_means$log10.crustacean.mass.per.g.plant.site, col = "cyan")    
+hist(ZEN_2014_site_means$log10.gastropod.mass.per.g.plant.site, col = "cyan")    
+hist(ZEN_2014_site_means$log10.grazer.richness.plot.site, col = "cyan")    
+hist(ZEN_2014_site_means$amphipod.survival.24hr.site, col = "cyan")    
+
+
+###################################################################################
+# EXPLORE DATA COMPLETENESS                                                       #
+###################################################################################
+
 
 
 
