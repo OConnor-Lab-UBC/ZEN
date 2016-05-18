@@ -53,7 +53,7 @@ sitesP <- ZENverts.sites[(ZENverts.sites$Ocean=='Pacific'),]
 sitesA <- ZENverts.sites[(ZENverts.sites$Ocean=='Atlantic'),]
 sitesM <- ZENverts.sites[(ZENverts.sites$Ocean=='Med'),]
 
-sitesO <- sitesA
+sitesO <- sitesP
 
 ## remove columns, collapse plots by site
 sites <- aggregate(sitesO[,-c(1:16, 214:215)], list(sitesO$Site), sum)
@@ -75,9 +75,9 @@ Metacommunity(sites2, verbose = TRUE, allowEmpty = TRUE) -> meta # could use all
 a <- as.data.frame(meta[1])
 
 pdf('Pacific.pdf', width = 7, height = 9)
-levelplot(as.matrix(a), col.regions=c(0,1), region = TRUE, colorkey=FALSE, ylab = '', xlab = '', main="Pacific",  border="black", scales = list(cex = c(0.5, 0.5), rot = c(90, 90)))
+levelplot(as.matrix(a), col.regions=c(0,1), region = TRUE, colorkey=FALSE, ylab = '', xlab = '', main="Pacific",  border="black", scales = list(cex = c(0.5, 0.5), x = list(rot = c(90))))
 dev.off()
 
 pdf('Atlantic.pdf', width = 7, height = 9)
-levelplot(as.matrix(a), col.regions=c(0,1), region = TRUE, colorkey=FALSE, ylab = '', xlab = '', main="Atlantic",  border="black", scales = list(cex = c(0.5, 0.5), rot = c(90, 90)))
+levelplot(as.matrix(a), col.regions=c(0,1), region = TRUE, colorkey=FALSE, ylab = '', xlab = '', main="Atlantic",  border="black", scales = list(cex = c(0.5, 0.5), x = list(rot = c(90))))
 dev.off()
