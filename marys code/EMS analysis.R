@@ -50,9 +50,12 @@ ZENverts.sites <- merge(site.info, ZENverts, by = 'Site')
 
 ## group sites by ocean basin
 sitesP <- ZENverts.sites[(ZENverts.sites$Ocean=='Pacific'),]
+sitesA <- ZENverts.sites[(ZENverts.sites$Ocean=='Atlantic'),]
+sitesM <- ZENverts.sites[(ZENverts.sites$Ocean=='Med'),]
 
+sitesO <- sitesP
 ## remove columns, collapse plots by site
-sites <- aggregate(sitesP[,-c(1:16, 214:215)], list(sitesP$Site), sum)
+sites <- aggregate(sitesO[,-c(1:16, 214:215)], list(sitesO$Site), sum)
 dim(sites)
 #str(sites)
 
@@ -63,10 +66,13 @@ rowSums(sites1[,-1])
 rownames(sites1) <- sites1[,1]
 sites2 <- sites1[,-1]
 sites2[sites2 > 0] <- 1
-Metacommunity(sites2)  # could use allowEmpty == TRUE to allow Empty rows and cols in null matrix
--> meta
-meta
+Metacommunity(sites2, verbose = TRUE, allowEmpty = TRUE) -> meta # could use allowEmpty == TRUE to allow Empty rows and cols in null matrix
 
 
-# right; should do this for each ocean (not all of them at once...)
 
+## assuming this works, make a plot
+a <- as.data.frame(meta[1])
+
+pdf('Pacific.pdf', width = 7, height = 9)
+levelplot(as.matrix(a), col.regions=c(0,1), region = TRUE, colorkey=FALSE, ylab = '', xlab = '', main="Pacific",  border="black", scales = list(cex = c(0.5, 0.5), rot = c(90, 90)))
+dev.off()
