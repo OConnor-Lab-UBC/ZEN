@@ -1,0 +1,51 @@
+"","Site","Site.code","locale","ocean","margin","Site.Code","Subsite","Subsite.Name","Ocean","Coast","Basin","First.Year.In.ZEN","Latitude","Longitude"
+"1","BB.A","BB","A","Pacific","east","BB","A","Westside Park, Bodega Bay","Pacific","East.Pacific","East",2011,38.319755,-123.055136
+"2","BB.B","BB","B","Pacific","east","BB","B","Sacramento Landing, Tomales Bay","Pacific","East.Pacific","East",2014,38.1496437,-122.9063846
+"3","BC.A","BC","A","Pacific","east","BC","A","Tsawwassen","Pacific","East.Pacific","East",2011,49,-123.1
+"4","BC.B","BC","B","Pacific","east","BC","B","White Rock","Pacific","East.Pacific","East",2014,49,-122.8
+"5","CR.A","CR","A","Med","central","CR","A","Posedarje","Atlantic","East.Atlantic","East",2014,44.21154996,15.4906946
+"6","CR.B","CR","B","Med","central","CR","B","Sveti Duh","Atlantic","East.Atlantic","East",2014,44.20557132,15.47773378
+"7","ES.A","ES","A","Atlantic","west","ES","A","South Bay","Atlantic","West.Atlantic","West",2014,37.265686,-75.812668
+"8","ES.B","ES","B","Atlantic","west","ES","B","Cobb Bay","Atlantic","West.Atlantic","West",2014,37.31855,-75.789076
+"9","FI.A","FI","A","Atlantic","east","FI","A","FŒrš","Atlantic","East.Atlantic","East",2014,59.92025,21.79618333
+"10","FI.B","FI","B","Atlantic","east","FI","B","€ngsš","Atlantic","East.Atlantic","East",2011,60.10785,21.70995
+"11","FR.A","FR","A","Med","central","FR","A","Bouzigues, Etang de Thau","Atlantic","East.Atlantic","East",2014,43.446971,3.661503
+"12","FR.B","FR","B","Med","central","FR","B","Peyrac sur mer, Etang de Bages-Sigean","Atlantic","East.Atlantic","East",2014,43.082895,2.973231
+"13","IR.A","IR","A","Atlantic","east","IR","A","Greyabbey","Atlantic","East.Atlantic","East",2014,54.531944,-5.569167
+"14","IR.B","IR","B","Atlantic","east","IR","B","Donegal ","Atlantic","East.Atlantic","East",2014,55.2225,-7.701944
+"15","JN.A","JN","A","Pacific","west","JN","A","Akkeshi-ko estuary","Pacific","West.Pacific","West",2011,43.021167,144.903217
+"16","JN.B","JN","B","Pacific","west","JN","B","Akkeshi-bay","Pacific","West.Pacific","West",2014,43.052222,144.842699
+"17","JS.A","JS","A","Pacific","west","JS","A","Ikunoshima","Pacific","West.Pacific","West",2014,34.297834,132.91631
+"18","JS.B","JS","B","Pacific","west","JS","B","Onoura","Pacific","West.Pacific","West",2014,34.274018,132.26617
+"19","KO.A","KO","A","Pacific","west","KO","A","Dongdae bay","Pacific","West.Pacific","West",2014,34.89466111,128.0202722
+"20","KO.B","KO","B","Pacific","west","KO","B","Koje bay","Pacific","West.Pacific","West",2014,34.80097222,128.5836944
+"21","LI.1","LI","1","Atlantic","west","LI","1","Site 1 (Landscape Lab)","Atlantic","West.Atlantic","West",2014,40.85762,-72.45119
+"22","LI.2","LI","2","Atlantic","west","LI","2","Site 2 (Tiana Beach, Summer)","Atlantic","West.Atlantic","West",2014,40.83158,-72.54082
+"23","MA.A","MA","A","Atlantic","west","MA","A","Dorothy Cove","Atlantic","West.Atlantic","West",2011,42.42014,-70.91544
+"24","MA.B","MA","B","Atlantic","west","MA","B","Niles Beach","Atlantic","West.Atlantic","West",2014,42.59697,-70.6556
+"25","MX.A","MX","A","Pacific","east","MX","A","San Quintin Bay","Pacific","East.Pacific","East",2014,30.419675,-115.9641889
+"26","MX.B","MX","B","Pacific","east","MX","B","Punta Banda Estuary","Pacific","East.Pacific","East",2014,31.7584722,-116.6227778
+"27","NC.A","NC","A","Atlantic","west","NC","A","Middle Marsh","Atlantic","West.Atlantic","West",2011,34.692458,-76.622589
+"28","NC.B","NC","B","Atlantic","west","NC","B","Shackleford Island","Atlantic","West.Atlantic","West",2014,34.670544,-76.574561
+"29","NN.A","NN","A","Atlantic","east","NN","A","Misvaerfjorden","Atlantic","East.Atlantic","East",2014,67.2147,15.0083
+"30","NN.B","NN","B","Atlantic","east","NN","B","Ršvika","Atlantic","East.Atlantic","East",2014,67.26672333,15.25606333
+"31","OR.A","OR","A","Pacific","east","OR","A","Yaquina Bay","Pacific","East.Pacific","East",2014,44.61273333,-124.0141333
+"32","OR.B","OR","B","Pacific","east","OR","B","Coos Bay","Pacific","East.Pacific","East",2014,43.34625,-124.3182833
+"33","PO.A","PO","A","Atlantic","east","PO","A","Culatatra","Atlantic","East.Atlantic","East",2014,36.997057,-7.82849
+"34","PO.B","PO","B","Atlantic","east","PO","B","Marim","Atlantic","East.Atlantic","East",2014,37.027333,-7.810105
+"35","QU.A","QU","A","Atlantic","west","QU","A","Pointe-Lebel","Atlantic","West.Atlantic","West",2014,49.11237,-68.17593
+"36","QU.B","QU","B","Atlantic","west","QU","B","Baie-St-Ludger","Atlantic","West.Atlantic","West",2014,49.08696,-68.32041
+"37","RU.A","RU","A","Atlantic","east","RU","A","Seldianaya","Atlantic","East.Atlantic","East",2014,66.40611111,33.72305556
+"38","RU.B","RU","B","Atlantic","east","RU","B","Nicolskaya","Atlantic","East.Atlantic","East",2014,66.28583333,34.0025
+"39","SD.A","SD","A","Pacific","east","SD","A","Shelter Island","Pacific","East.Pacific","East",2011,32.713756,-117.225474
+"40","SD.B","SD","B","Pacific","east","SD","B","Coronado ","Pacific","East.Pacific","East",2014,32.700762,-117.172885
+"41","SF.A","SF","A","Pacific","east","SF","A","Point Molate","Pacific","East.Pacific","East",2014,37.946557,-122.418499
+"42","SF.B","SF","B","Pacific","east","SF","B","Point San Pablo","Pacific","East.Pacific","East",2014,37.978118,-122.405941
+"43","SW.A","SW","A","Atlantic","east","SW","A","Torseršd","Atlantic","East.Atlantic","East",2014,58.3131,11.5488
+"44","SW.B","SW","B","Atlantic","east","SW","B","Bškevik","Atlantic","East.Atlantic","East",2014,58.2488,11.4536
+"45","UK.A","UK","A","Atlantic","east","UK","A","Porth Dinllaen","Atlantic","East.Atlantic","East",2014,52.942282,-4.565173
+"46","UK.B","UK","B","Atlantic","east","UK","B","Penn Y Chain","Atlantic","East.Atlantic","East",2014,52.89856,-4.321868
+"47","VA.A","VA","A","Atlantic","west","VA","A","Goodwin Islands","Atlantic","West.Atlantic","West",2011,37.2204206,-76.4013352
+"48","VA.B","VA","B","Atlantic","west","VA","B","Allen's Islands","Atlantic","West.Atlantic","West",2014,37.2543093,-76.4374474
+"49","WA.A","WA","A","Pacific","east","WA","A","Willapa Bay","Pacific","East.Pacific","East",2011,46.474,-124.028
+"50","WA.B","WA","B","Pacific","east","WA","B","Dabob Bay","Pacific","East.Pacific","East",2014,47.809,-122.815

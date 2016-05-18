@@ -33,13 +33,21 @@ ZENverts <- read.csv("../Emmett files/ZEN_2014_mesograzers_2016-05-17.csv")
 head(ZENverts)
 names(ZENverts)
 
+### identify sites by their coast
+site.names <- as.vector(levels(unique(ZENverts$Site)))
+site.geog <- read.csv("../site data/geography.csv")
+site.geog$Site <- paste(site.geog$Site.code, site.geog$locale, sep = '.')
+lat.long <- read.csv("../site data/ZEN_2014_Lat&Long.csv")
+site.info <- merge(site.geog, lat.long, by = 'Site')
+write.csv(site.info, 'siteinfo.csv')
+
 ## remove columns
 sites <- aggregate(ZENverts[,-c(1:3, 201:202)], list(ZENverts$Site), sum)
 sites[sites > 0] <- 1
 dim(sites)
 str(sites)
 
-#Trim the species with 0 occurrances in this dataset
+#Trim the species with 0 occurrences in this dataset
 cols.to.delete <- which(colSums(sites[,2:198]) == 0)
 sites1 <- sites[!sites$Group.1%in%c('CR.B', 'CR.A'),-(cols.to.delete+1)]
 rowSums(sites1[,-1])
@@ -47,4 +55,7 @@ rownames(sites1) <- sites1[,1]
 sites2 <- sites1[,-1]
 Metacommunity(sites2) -> meta
 meta
+
+
+# right; should do this for each ocean (not all of them at once...)
 
