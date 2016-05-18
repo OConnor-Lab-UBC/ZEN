@@ -35,13 +35,16 @@ names(ZENverts)
 
 ## remove columns
 sites <- aggregate(ZENverts[,-c(1:3, 201:202)], list(ZENverts$Site), sum)
+sites[sites > 0] <- 1
 dim(sites)
 str(sites)
 
 #Trim the species with 0 occurrances in this dataset
 cols.to.delete <- which(colSums(sites[,2:198]) == 0)
-sites1 <- sites[-(sites1$Group.1=='CR.B')&(sites1$Group.1=='CR.A'),-(cols.to.delete+1)]
-
-Metacommunity(sites1) -> meta
+sites1 <- sites[!sites$Group.1%in%c('CR.B', 'CR.A'),-(cols.to.delete+1)]
+rowSums(sites1[,-1])
+rownames(sites1) <- sites1[,1]
+sites2 <- sites1[,-1]
+Metacommunity(sites2) -> meta
 meta
 
