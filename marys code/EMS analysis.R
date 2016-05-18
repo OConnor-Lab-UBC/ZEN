@@ -53,7 +53,8 @@ sitesP <- ZENverts.sites[(ZENverts.sites$Ocean=='Pacific'),]
 sitesA <- ZENverts.sites[(ZENverts.sites$Ocean=='Atlantic'),]
 sitesM <- ZENverts.sites[(ZENverts.sites$Ocean=='Med'),]
 
-sitesO <- sitesP
+sitesO <- sitesA
+
 ## remove columns, collapse plots by site
 sites <- aggregate(sitesO[,-c(1:16, 214:215)], list(sitesO$Site), sum)
 dim(sites)
@@ -61,7 +62,7 @@ dim(sites)
 
 #Trim the species with 0 occurrences in this dataset
 cols.to.delete <- which(colSums(sites[,2:198]) == 0)
-sites1 <- sites[,-(cols.to.delete+1)]  # !sites$Group.1%in%c('CR.B', 'CR.A')
+sites1 <- sites[!sites$Group.1%in%c('CR.B', 'CR.A'),-(cols.to.delete+1)]  # 
 rowSums(sites1[,-1])
 rownames(sites1) <- sites1[,1]
 sites2 <- sites1[,-1]
@@ -75,4 +76,8 @@ a <- as.data.frame(meta[1])
 
 pdf('Pacific.pdf', width = 7, height = 9)
 levelplot(as.matrix(a), col.regions=c(0,1), region = TRUE, colorkey=FALSE, ylab = '', xlab = '', main="Pacific",  border="black", scales = list(cex = c(0.5, 0.5), rot = c(90, 90)))
+dev.off()
+
+pdf('Atlantic.pdf', width = 7, height = 9)
+levelplot(as.matrix(a), col.regions=c(0,1), region = TRUE, colorkey=FALSE, ylab = '', xlab = '', main="Atlantic",  border="black", scales = list(cex = c(0.5, 0.5), rot = c(90, 90)))
 dev.off()
