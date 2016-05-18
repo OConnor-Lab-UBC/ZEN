@@ -36,7 +36,7 @@ library(data.table)
 rasterOptions(maxmemory=5e+08,chunksize=5e+07) 
 
 ###### 1) Load the unique lat/longs into zen.coords
-zen.coords <- read.csv("ZEN_2014_Lat&Long.csv")
+zen.coords <- read.csv("../site data/ZEN_2014_Lat&Long.csv")
 
 #filter out marine sites, as they are the only ones with SST
 unique_lat_long <- zen.coords %>%
