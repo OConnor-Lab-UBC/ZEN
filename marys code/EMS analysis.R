@@ -53,17 +53,18 @@ sitesP <- ZENverts.sites[(ZENverts.sites$Ocean=='Pacific'),]
 
 ## remove columns, collapse plots by site
 sites <- aggregate(sitesP[,-c(1:16, 214:215)], list(sitesP$Site), sum)
-sites[sites > 0] <- 1
 dim(sites)
-str(sites)
+#str(sites)
 
 #Trim the species with 0 occurrences in this dataset
 cols.to.delete <- which(colSums(sites[,2:198]) == 0)
-sites1 <- sites[!sites$Group.1%in%c('CR.B', 'CR.A'),-(cols.to.delete+1)]
+sites1 <- sites[,-(cols.to.delete+1)]  # !sites$Group.1%in%c('CR.B', 'CR.A')
 rowSums(sites1[,-1])
 rownames(sites1) <- sites1[,1]
 sites2 <- sites1[,-1]
-Metacommunity(sites2) -> meta
+sites2[sites2 > 0] <- 1
+Metacommunity(sites2)  # could use allowEmpty == TRUE to allow Empty rows and cols in null matrix
+-> meta
 meta
 
 
