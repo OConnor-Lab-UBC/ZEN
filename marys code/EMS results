@@ -1,0 +1,17 @@
+Pacific: (positive coherence, negative turnover --> Nested)
+
+$Coherence
+                embAbs                      z                   pval 
+                 "458"     "8.20991343672155" "2.21348015604711e-16" 
+         simulatedMean      simulatedVariance                 method 
+             "981.294"     "63.7392834934647"                   "r1" 
+
+$Turnover
+              turnover                      z                   pval 
+               "78743"    "-3.44953434731076" "0.000561554287677528" 
+         simulatedMean      simulatedVariance                 method 
+           "39103.241"     "11491.3362236567"                   "r1" 
+
+$Boundary
+    index P df
+1 6.87909 0 92

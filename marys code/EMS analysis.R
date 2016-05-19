@@ -51,7 +51,6 @@ ZENverts.sites <- merge(site.info, ZENverts, by = 'Site')
 ## group sites by ocean basin
 sitesP <- ZENverts.sites[(ZENverts.sites$Ocean=='Pacific'),]
 sitesA <- ZENverts.sites[(ZENverts.sites$Ocean=='Atlantic'),]
-sitesM <- ZENverts.sites[(ZENverts.sites$Ocean=='Med'),]
 
 sitesO <- sitesP
 
@@ -67,7 +66,7 @@ rowSums(sites1[,-1])
 rownames(sites1) <- sites1[,1]
 sites2 <- sites1[,-1]
 sites2[sites2 > 0] <- 1
-Metacommunity(sites2, verbose = TRUE, allowEmpty = TRUE) -> meta # could use allowEmpty == TRUE to allow Empty rows and cols in null matrix
+Metacommunity(sites2, verbose = TRUE, allowEmpty = TRUE) -> meta 
 
 
 
@@ -80,4 +79,8 @@ dev.off()
 
 pdf('Atlantic.pdf', width = 7, height = 9)
 levelplot(as.matrix(a), col.regions=c(0,1), region = TRUE, colorkey=FALSE, ylab = '', xlab = '', main="Atlantic",  border="black", scales = list(cex = c(0.5, 0.5), x = list(rot = c(90))))
+dev.off()
+
+pdf('Global.pdf', width = 7, height = 9)
+levelplot(as.matrix(a), col.regions=c(0,1), region = TRUE, colorkey=FALSE, ylab = '', xlab = '', main="Global",  border="black", scales = list(cex = c(0.5, 0.5), x = list(rot = c(90))))
 dev.off()
