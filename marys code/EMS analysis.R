@@ -95,6 +95,14 @@ pdf('Global.pdf', width = 7, height = 9)
 levelplot(as.matrix(a), col.regions=c(0,1), region = TRUE, colorkey=FALSE, ylab = '', xlab = '', main="Global",  border="black", scales = list(cex = c(0.5, 0.5), x = list(rot = c(90))))
 dev.off()
 
+## 
+sites <- as.data.frame(unique(levels(as.factor((sitesP$Site)))))
+colnames(sites) <- 'site'
+BC.A <- sites1[sites1$Group.1 == "BC.A",]
+BC.SAC <- specaccum(BC.A[,-1], method = "rarefaction", xvar = individuals, col = 1) # when this is working, subset command may be useful here.
+plot(BC.SAC)
+
+## ok, this isn't really working... maybe should do this with plot data in sites. 
 
 
 library(BiodiversityR)
