@@ -84,3 +84,21 @@ dev.off()
 pdf('Global.pdf', width = 7, height = 9)
 levelplot(as.matrix(a), col.regions=c(0,1), region = TRUE, colorkey=FALSE, ylab = '', xlab = '', main="Global",  border="black", scales = list(cex = c(0.5, 0.5), x = list(rot = c(90))))
 dev.off()
+
+
+
+library(BiodiversityR)
+sites <- as.data.frame(unique(levels(as.factor((sitesP$Site)))))
+colnames(sites) <- 'site'
+
+BB.A <- rankabundance(sites2, y = sites, factor = "site", level = 'BB.A')
+BB.A <- rankabunplot(BB.A)
+
+BB.B <- rankabundance(sites2, y = sites, factor = "site", level = 'BB.B')
+BB.B <- rankabunplot(BB.B)
+
+BC.A <- rankabundance(sites2, y = sites, factor = "site", level = 'BC.A')
+BC.A <- rankabunplot(BC.A)
+
+BC.B <- rankabundance(sites2, y = sites, factor = "site", level = 'BC.B')
+BC.B <- rankabunplot(BC.B)
