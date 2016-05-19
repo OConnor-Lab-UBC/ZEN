@@ -61,24 +61,29 @@ dim(sites)
 
 # Trim the species with 0 occurrences in this dataset
 cols.to.delete <- which(colSums(sites[,2:197]) == 0)
-sites1 <- sites[!sites$Group.1%in%c('CR.B', 'CR.A'),-(cols.to.delete+1)]  # 
+sites1 <- sites[!sites$Group.1%in%c('CR.B', 'CR.A'), -(cols.to.delete+1)]  # 
 rowSums(sites1[,-1])
 rownames(sites1) <- sites1[,1]
 sites2 <- sites1[,-1]
 
 # for a bray curtis similarity matrix
+## using relative abundance data
 div <- sites2
 div.mat <- vegdist(div)
-
 mat2 <- as.matrix(div.mat)
-
 write.csv(mat2, 'ZEN2014epifaunadissim.csv')
+
+## make it presence absence
+sites2[sites2 > 0] <- 1
+div2 <- sites2
+div.mat3 <- vegdist(div2)
+mat3 <- as.matrix(div.mat3)
+write.csv(mat3, 'ZEN2014epifaunadissimPA.csv')
+
 
 # For EMS analysis
 sites2[sites2 > 0] <- 1
 Metacommunity(sites2, verbose = TRUE, allowEmpty = TRUE) -> meta 
-
-
 
 ## assuming this works, make a plot
 a <- as.data.frame(meta[1])
