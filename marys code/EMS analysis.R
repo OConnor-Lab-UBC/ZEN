@@ -69,9 +69,10 @@ sites2 <- sites1[,-1]
 # for a bray curtis similarity matrix
 div <- sites2
 div.mat <- vegdist(div)
-c
 
-write.csv(as.data.frame(div.mat), 'ZEN2014epifaunadissim.csv')
+mat2 <- as.matrix(div.mat)
+
+write.csv(mat2, 'ZEN2014epifaunadissim.csv')
 
 # For EMS analysis
 sites2[sites2 > 0] <- 1
