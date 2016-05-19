@@ -52,19 +52,28 @@ ZENverts.sites <- merge(site.info, ZENverts, by = 'Site')
 sitesP <- ZENverts.sites[(ZENverts.sites$Ocean=='Pacific'),]
 sitesA <- ZENverts.sites[(ZENverts.sites$Ocean=='Atlantic'),]
 
-sitesO <- sitesP
+sitesO <- ZENverts.sites
 
 ## remove columns, collapse plots by site
-sites <- aggregate(sitesO[,-c(1:16, 214:215)], list(sitesO$Site), sum)
+sites <- aggregate(sitesO[,-c(1:17, 214:216)], list(sitesO$Site), sum)
 dim(sites)
 #str(sites)
 
-#Trim the species with 0 occurrences in this dataset
-cols.to.delete <- which(colSums(sites[,2:198]) == 0)
+# Trim the species with 0 occurrences in this dataset
+cols.to.delete <- which(colSums(sites[,2:197]) == 0)
 sites1 <- sites[!sites$Group.1%in%c('CR.B', 'CR.A'),-(cols.to.delete+1)]  # 
 rowSums(sites1[,-1])
 rownames(sites1) <- sites1[,1]
 sites2 <- sites1[,-1]
+
+# for a bray curtis similarity matrix
+div <- sites2
+div.mat <- vegdist(div)
+c
+
+write.csv(as.data.frame(div.mat), 'ZEN2014epifaunadissim.csv')
+
+# For EMS analysis
 sites2[sites2 > 0] <- 1
 Metacommunity(sites2, verbose = TRUE, allowEmpty = TRUE) -> meta 
 
