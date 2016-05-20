@@ -9,6 +9,7 @@
 library(plyr)
 library(reshape2)
 library(stringr)
+library(lattice)
 
 data <- read.csv("../species data/GoodwinIslands.csv")
 head(data)
@@ -19,8 +20,8 @@ data$total <- rowSums((data[,c("X8", "X5.6", "X4", "X2.8", "X2", "X1.4", "X1", "
 #remove unnamed taxa
 data1 <- data[-which(data$species.name.revised == ""),]
 
-#fix spelling of a taxon
-#data[(data$species.name.revised == 'Astyris\xe6lunata')]
+#fix spelling of a taxon - or for now, just take it out
+data1 <- data1[-(data1$species.name.revised == 'Astyris\xe6lunata'),]
 #data$species.name.revised[[Astyris\xe6lunata]] <- "Astyrisea lunata"
 
 ### maybe split the species name and then paste with .
@@ -33,7 +34,7 @@ idata1 <- idata[,c(2,4,7,10,23)]
 
 ## sum across replicates
 idata2 <- ddply(idata1, .(month, year, species.name.revised), summarise, sum(total))
-idata2$time.ID <- paste(idata2$month, idata2$year, sep = '.')
+idata2$time.ID <- paste(idata2$year, idata2$month, sep = '.')
  
 idata3 <- melt(idata2, id = c(1,2,3,5), measure.vars = "..1")
 
@@ -42,6 +43,9 @@ idata3 <- idata3[,-(1:2)]
 idata4 <- dcast(idata3, time.ID ~ species.name.revised, mean)
 
 idata4 <- as.data.frame(idata4)
+
+# order samples in time
+idata4 <- idata4[order(idata4$time.ID),]
 
 #remove NaN and Nas. 
 is.nan.data.frame <- function(x)
@@ -57,18 +61,28 @@ rownames(idata5) <- idata5[,1]
 idata5 <- idata5[, -c(1, ncol(idata5))]
 idata5[idata5 > 0] <- 1
 
-## something is weird with the data; start here and remove species for which there are no observations
 cols.to.delete <- which(colSums(idata5) == '0')
-idata5 <- idata5[, -(cols.to.delete+1)]
+idata5 <- idata5[, -(cols.to.delete)]
+
+#check that there are no zeros for sites
+#rowSums(idata5)=='0'
 
 # For EMS analysis
 library(metacom)
-Metacommunity(idata5[,1:40], verbose = TRUE, allowEmpty = TRUE) -> meta 
+Metacommunity(idata5, verbose = TRUE, allowEmpty = TRUE) -> meta 
 
 ## assuming this works, make a plot
-a <- as.data.frame(meta[1])
+a <- do.call(rbind.data.frame, meta[1])
 
 pdf('GoodwinIslands.pdf', width = 7, height = 9)
-levelplot(as.matrix(a), col.regions=c(0,1), region = TRUE, colorkey=FALSE, ylab = '', xlab = '', main="GoodwinIslands",  border="black", scales = list(cex = c(0.5, 0.5), x = list(rot = c(90))))
+levelplot(as.matrix(a), col.regions=c(0,1), region = TRUE, colorkey=FALSE, ylab = '', xlab = '', main="GoodwinIslands",  border="black", scales = list(cex = c(0.4, 0.4), x = list(rot = c(90))))
 dev.off()
 
+### run the EMS with samples ordered in time
+Metacommunity(idata5, verbose = TRUE, allowEmpty = TRUE, order = FALSE) -> meta1 
+meta1[2:4]
+b <- do.call(rbind.data.frame, meta1[1])
+
+pdf('GoodwinIslandsChrono.pdf', width = 7, height = 9)
+levelplot(as.matrix(b), col.regions=c(0,1), region = TRUE, colorkey=FALSE, ylab = '', xlab = '', main="GoodwinIslands - Samples ordered chronologically",  border="black", scales = list(cex = c(0.4, 0.4), x = list(rot = c(90))))
+dev.off()
