@@ -3,16 +3,16 @@
 # ZEN 2014 data analysis (JED)                                                   ##
 # Data are current as of 18 May 2016                                             ##
 # Emmett Duffy (duffye@si.edu)                                                   ##  
-# Last updated 2016-05-19                                                        ##
+# Last updated 2016-05-21                                                        ##
 #                                                                                ##
 ###################################################################################
 
 # TO DO:
 
-# 1) MODEL PRODUCTIVITY (SHEATH LENGTH X SHOOT DENSITY)
-
+# Make sure we are using the latest data file on OSF
+# Do standard model suite for: ZAG biomass, shoot density, gastropods
+# integrate thes models into SEM?
 # 2) Integrate depth/intertidal variable
-
 # 3) Integrate LOI data where available
 
 ###################################################################################
@@ -39,9 +39,20 @@
 # PERFORM VIF ANALYSIS: ZOSTERA ABOVE-GROUND MASS (NO OTHER ZOSTERA PREDICTORS)   #
 # PERFORM VIF ANALYSIS: PERIPHYTON BIOMASS                                        #
 # PERFORM VIF ANALYSIS: CRUSTACEAN ABUNDANCE                                      #
-# BUILD HIERARCHICAL MODELS: GENERAL                                              #
+# HIERARCHICAL MODELING APPROACH: RATIONALE                                       #
 # BUILD HIERARCHICAL MODELS: ZOSTERA ABOVE-GROUND BIOMASS                         #
-# BUILD HIERARCHICAL MODELS: ZOSTERA SHOOT DENSITY                                #
+#                                                                                 #
+# MODELS OF EELGRASS PRODUCTIVITY: RANDOM FORESTS                                 #
+# MODELS OF EELGRASS PRODUCTIVITY: PLOT LEVEL (HIERARCHICAL)                      #
+# MODELS OF EELGRASS PRODUCTIVITY: SITE LEVEL (SIMPLE)                            #
+#                                                                                 #
+# MODELS OF PERIPHYTON BIOMASS: RANDOM FORESTS                                    #
+# MODELS OF PERIPHYTON BIOMASS: PLOT LEVEL (HIERARCHICAL)                         #
+# MODELS OF PERIPHYTON BIOMASS: SITE LEVEL (SIMPLE)                               #
+#                                                                                 #
+# MODELS OF CRUSTACEAN BIOMASS: RANDOM FORESTS                                    #
+# MODELS OF CRUSTACEAN BIOMASS: PLOT LEVEL (HIERARCHICAL)                         #
+# MODELS OF CRUSTACEAN BIOMASS: SITE LEVEL (SIMPLE)                               #
 #                                                                                 #
 ###################################################################################
 
@@ -1487,7 +1498,7 @@ crustBN = ggplot(ZEN_2014_site_means, aes(x = Latitude, y = log10.crustacean.mea
         panel.border = element_rect(size = 1.5),axis.ticks = element_line(size = 1.5))
 crustBN + geom_smooth(method = lm, fullrange = F, se = F, lwd = 1.5, col="black", na.rm=T)
 
-# Gatsropod mean body mass x latitude
+# Gastropod mean body mass x latitude
 # NOTE: Need to remove sites with zero values before doing this calculation!
 gastBN = ggplot(ZEN_2014_site_means, aes(x = Latitude, y = log10.gastropod.mean.body.mass.site, col = Ocean)) +
   geom_point(size = 5) +
@@ -2592,7 +2603,7 @@ vif(vifcrust.6)
 
 
 ###################################################################################
-# BUILD HIERARCHICAL MODELS: GENERAL                                              #
+# HIERARCHICAL MODELING APPROACH: RATIONALE                                       #
 ###################################################################################
 
 # Some notes on modeling approach: 
@@ -2783,18 +2794,27 @@ summary(ZAG.site)
 
 # First, create an estimate of eelgrass biomass producivity rate. Here we use sheath length
 # as a proxy for leaf elongation rate, based on Jen Ruesink's analysis of ZEN 1 (2011) data, 
-# and multiply that estimate of leaf elongation rate by shoot density to get rough proxy for biomass production rate.
+# and multiply that estimate of leaf elongation rate by shoot density to get rough proxy 
+# for biomass production rate.
 
 ZEN_2014_master_data$Zostera.proxy.production.rate <- ZEN_2014_master_data$Zostera.sheath.length * ZEN_2014_master_data$Zostera.shoots.per.m2.core
 ZEN_2014_master_data$log10.Zostera.proxy.production.rate <- log10(ZEN_2014_master_data$Zostera.proxy.production.rate)
 hist(ZEN_2014_master_data$Zostera.proxy.production.rate)
 hist(ZEN_2014_master_data$log10.Zostera.proxy.production.rate) # Nice. Use log10-transformed data
 
+ZEN_2014_master_data_imputed$log10.Zostera.proxy.production.rate <- ZEN_2014_master_data$log10.Zostera.proxy.production.rate[match(ZEN_2014_master_data_imputed$Unique.ID, ZEN_2014_master_data$Unique.ID)]
+ZEN_2014_master_data_49_imputed$log10.Zostera.proxy.production.rate <- ZEN_2014_master_data$log10.Zostera.proxy.production.rate[match(ZEN_2014_master_data_49_imputed$Unique.ID, ZEN_2014_master_data$Unique.ID)]
+
 x <- ddply(ZEN_2014_master_data, c("Site"), summarize, log10.Zostera.proxy.production.rate.site = mean(log10.Zostera.proxy.production.rate, na.rm = T))
 nrow(x)
 
-ZEN_2014_site_means$log10.Zostera.proxy.production.rate.site <- x$log10.Zostera.proxy.production.rate.site[match(ZEN_2014_site_means$Site, x$Site)]
+ZEN_2014_site_means$log10.Zostera.proxy.production.rate.site <- x$log10.Zostera.proxy.production.rate.site
+  [match(ZEN_2014_site_means$Site, x$Site)]
 names(ZEN_2014_site_means)
+
+ZEN_2014_site_means_49$log10.Zostera.proxy.production.rate.site <- x$log10.Zostera.proxy.production.rate.site[match(ZEN_2014_site_means_49$Site, x$Site)]
+names(ZEN_2014_site_means)
+
 
 # Explore graphically
 
@@ -2850,53 +2870,52 @@ RF.Zproduction.1 = randomForest(log10.Zostera.proxy.production.rate ~
 )
 
 # Examine summary output
-RF.Zproduction.1 # % Var explained: 
+RF.Zproduction.1 # % Var explained: 64.41
 
 # Plot variable importance
 varImpPlot(RF.Zproduction.1) 
-# RESULTS: 
+# RESULTS: temperature stands out
 
 
-# Construct random forest: CRUSTACEAN BIOMASS (omitting geographic variables)
-RF.crustacean.2 = randomForest(
-  log10.crustacean.mass.per.g.plant ~ 
-    #  Ocean
-    # + Coast
-    # + Latitude
-    # + Longitude
-    # + basin 
-    + Temperature.C
-  + Salinity.ppt
-  # + Day.length.hours
-  + log10.mean.fetch
-  + pop.density.2015
-  + Depth.Categorical
-  # + Depth.m
-  # + Perc.Silt
-  # + Perc.Sand
-  # + Perc.Gravel
-  # + GenotypicRichness
-  + AllelicRichness
-  # + Inbreeding
-  + log10.Zostera.AG.mass
-  + log10.macrophytes.total.AG.mass.core
-  + log10.Zostera.shoots.core
-  + Zostera.sheath.width
-  + Zostera.sheath.length
-  + Zostera.longest.leaf.length
-  # + log10.pct.cover.macroalgae
-  # + pct.cover.seagrass
-  + log10.periphyton.mass.per.g.zostera  
-  #  + log10.mesograzer.abund.per.g.plant
-  # + log10.crustacean.abund.per.g.plant
-  # + log10.amphipod.abund.per.g.plant
-  # + log10.gammarid.abund.per.g.plant
-  #   + log10.gastropod.abund.per.g.plant
-  #   + log10.grazer.richness.plot
-  #   + log10.grazer.richness.site
-  + amphipod.survival.24hr
-  + log10.Leaf.PercN
-  # + log10.GenotypicRichness
+# Construct random forest: ZOSTERA PRODUCTION RATE (omitting geographic variables)
+RF.Zproduction.2 = randomForest(log10.Zostera.proxy.production.rate ~ 
+                               #   Ocean
+                               # + Coast
+                               # + basin
+                               # + Latitude
+                               # + Longitude
+                               + Temperature.C
+                               + Salinity.ppt
+                               # + Day.length.hours
+                               + log10.mean.fetch
+                               + pop.density.2015
+                               + Depth.Categorical
+                               # + Depth.m
+                               # + Perc.Silt
+                               # + Perc.Sand
+                               # + Perc.Gravel
+                               # + GenotypicRichness
+                               + AllelicRichness
+                               # + Inbreeding
+                               # + log10.Zostera.AG.mass
+                               # + log10.macrophytes.total.AG.mass.core
+                               # + log10.Zostera.shoots.core
+                               # + Zostera.sheath.width
+                               # + Zostera.sheath.length
+                               # + Zostera.longest.leaf.length
+                               # + log10.pct.cover.macroalgae
+                               # + pct.cover.seagrass
+                               + log10.periphyton.mass.per.g.zostera  
+                               + log10.mesograzer.mass.per.g.plant
+                               + log10.crustacean.mass.per.g.plant
+                               + log10.amphipod.mass.per.g.plant
+                               + log10.gammarid.mass.per.g.plant
+                               #   + log10.gastropod.abund.per.g.plant
+                               #   + log10.grazer.richness.plot
+                               #   + log10.grazer.richness.site
+                               + amphipod.survival.24hr
+                               + log10.Leaf.PercN
+                               # + log10.GenotypicRichness
   ,
   data = ZEN_2014_master_data,
   na.action = na.roughfix,
@@ -2905,13 +2924,331 @@ RF.crustacean.2 = randomForest(
 )
 
 # Examine summary output
-RF.crustacean.2 # % Var explained: 72.54
+RF.Zproduction.2 # % Var explained: 63.34
 
 # Plot variable importance
-varImpPlot(RF.crustacean.2) 
-# RESULT: Allelic richness, temperature, fetch, allelic richness ...), Go figure ...
+varImpPlot(RF.Zproduction.2) 
+# RESULT: temperature. Inteesting - geography has no discrenable effect on Zostera 
+# production, beyond the effect of temperature. 
 
 
+###################################################################################
+# MODELS OF EELGRASS PRODUCTIVITY: PLOT LEVEL (HIERARCHICAL)                      #
+###################################################################################
+
+# Hierarchical model (plot level): FULL
+# NOTE: Using coast as random variable.
+Zproduction.plot.1 <- lme(log10.Zostera.proxy.production.rate ~ 
+                           Latitude
+                         + Temperature.C
+                         + Salinity.ppt
+                         # + Day.length.hours
+                         + log10.mean.fetch
+                         # + Depth.Categorical
+                         + pop.density.2015
+                         # + log10.Zostera.AG.mass.imputed
+                         # + log10.Zostera.shoots.core.imputed
+                         # + log10.Zostera.sheath.length
+                         # + log10.Zostera.longest.leaf.length
+                         + AllelicRichness
+                         + log10.Leaf.PercN.imputed
+                         + log10.periphyton.mass.per.g.zostera.imputed
+                         + log10.mesograzer.mass.per.g.plant.imputed
+                         + log10.crustacean.mass.per.g.plant.imputed
+                         + log10.gastropod.mass.per.g.plant.imputed
+                         + grazer.richness.site
+                         # + squid.survival.24hr.imputed
+                         # + amphipod.survival.24hr # many missing value because only done at some sites
+                         , random = ~1 | Coast/Site
+                         , na.action = na.omit
+                         , data = ZEN_2014_master_data_49_imputed)
+summary(Zproduction.plot.1)
+# N = 965
+# AIC = 110.5114
+sem.coefs(list(Zproduction.plot.1), ZEN_2014_master_data_49_imputed, standardize = "scale")
+#                               response                                   predictor     estimate  std.error p.value
+# 8  log10.Zostera.proxy.production.rate log10.periphyton.mass.per.g.zostera.imputed  0.169684614 0.04832652  0.0005
+# 1  log10.Zostera.proxy.production.rate                                    Latitude -0.456668676 0.17651770  0.0136
+# 3  log10.Zostera.proxy.production.rate                                Salinity.ppt -0.371676778 0.14624499  0.0152
+# 5  log10.Zostera.proxy.production.rate                            pop.density.2015 -0.317052904 0.12672012  0.0168
+# 9  log10.Zostera.proxy.production.rate   log10.mesograzer.mass.per.g.plant.imputed -0.133391755 0.05711571  0.0197
+# 2  log10.Zostera.proxy.production.rate                               Temperature.C  0.146481611 0.13497815  0.2847
+
+
+# Hierarchical model (plot level): "COMPETITION" (but relation turns out to be positive ...)
+Zproduction.plot.2 <- lme(log10.Zostera.proxy.production.rate ~ 
+                          #   Latitude
+                          # + Temperature.C
+                          # + Salinity.ppt
+                          # # + Day.length.hours
+                          # + log10.mean.fetch
+                          # # + Depth.Categorical
+                          # + pop.density.2015
+                          # # + log10.Zostera.AG.mass.imputed
+                          # # + log10.Zostera.shoots.core.imputed
+                          # # + log10.Zostera.sheath.length
+                          # # + log10.Zostera.longest.leaf.length
+                          # + AllelicRichness
+                          # + log10.Leaf.PercN.imputed
+                          + log10.periphyton.mass.per.g.zostera.imputed
+                          # + log10.mesograzer.mass.per.g.plant.imputed
+                          # + log10.crustacean.mass.per.g.plant.imputed
+                          # + log10.gastropod.mass.per.g.plant.imputed
+                          # + grazer.richness.site
+                          # # + squid.survival.24hr.imputed
+                          # # + amphipod.survival.24hr # many missing value because only done at some sites
+                          , random = ~1 | Coast/Site
+                          , na.action = na.omit
+                          , data = ZEN_2014_master_data_49_imputed)
+summary(Zproduction.plot.2)
+# N = 965
+# AIC = 40.20471
+sem.coefs(list(Zproduction.plot.2), ZEN_2014_master_data_49_imputed, standardize = "scale")
+#                              response                                   predictor  estimate std.error p.value
+# 1 log10.Zostera.proxy.production.rate log10.periphyton.mass.per.g.zostera.imputed 0.1825507 0.0478227   1e-04
+
+
+# Hierarchical model (plot level): PRODUCTIVITY
+# NOTE: Using coast as random variable.
+Zproduction.plot.3 <- lme(log10.Zostera.proxy.production.rate ~ 
+                          #   Latitude
+                          # + Temperature.C
+                          # + Salinity.ppt
+                          # # + Day.length.hours
+                          # + log10.mean.fetch
+                          # # + Depth.Categorical
+                          # + pop.density.2015
+                          # # + log10.Zostera.AG.mass.imputed
+                          # # + log10.Zostera.shoots.core.imputed
+                          # # + log10.Zostera.sheath.length
+                          # # + log10.Zostera.longest.leaf.length
+                          # + AllelicRichness
+                          + log10.Leaf.PercN.imputed
+                          # + log10.periphyton.mass.per.g.zostera.imputed
+                          # + log10.mesograzer.mass.per.g.plant.imputed
+                          # + log10.crustacean.mass.per.g.plant.imputed
+                          # + log10.gastropod.mass.per.g.plant.imputed
+                          # + grazer.richness.site
+                          # # + squid.survival.24hr.imputed
+                          # + amphipod.survival.24hr # many missing value because only done at some sites
+                          , random = ~1 | Coast/Site
+                          , na.action = na.omit
+                          , data = ZEN_2014_master_data_49_imputed)
+summary(Zproduction.plot.3)
+# N = 965
+# AIC = 51.43112
+sem.coefs(list(Zproduction.plot.3), ZEN_2014_master_data_49_imputed, standardize = "scale")
+#                              response                predictor   estimate  std.error p.value
+# 1 log10.Zostera.proxy.production.rate log10.Leaf.PercN.imputed 0.01259627 0.03793142  0.7399
+
+
+# Hierarchical model (plot level): ABIOTIC ENVIRONMENT
+Zproduction.plot.4 <- lme(log10.Zostera.proxy.production.rate ~ 
+                            #   Latitude
+                            + Temperature.C
+                          + Salinity.ppt
+                          + Day.length.hours
+                          + log10.mean.fetch
+                          # + Depth.Categorical
+                          # + pop.density.2015
+                          # + log10.Zostera.AG.mass.imputed
+                          # + log10.Zostera.shoots.core.imputed
+                          # + log10.Zostera.sheath.length
+                          # + log10.Zostera.longest.leaf.length
+                          # + AllelicRichness
+                          # + log10.periphyton.mass.per.g.zostera.imputed
+                          # + log10.Leaf.PercN.imputed
+                          # # + log10.mesograzer.mass.per.g.plant.imputed
+                          # # + log10.crustacean.mass.per.g.plant.imputed
+                          # # + log10.gastropod.mass.per.g.plant.imputed
+                          # # + grazer.richness.site
+                          # # + squid.survival.24hr.imputed
+                          # # + amphipod.survival.24hr # many missing value because only done at some sites
+                          , random = ~1 | Coast/Site
+                          , na.action = na.omit
+                          , data = ZEN_2014_master_data_49_imputed)
+summary(Zproduction.plot.4)
+# N = 965
+# AIC = 69.05987
+sem.coefs(list(Zproduction.plot.4), ZEN_2014_master_data_49_imputed, standardize = "scale")
+#                              response        predictor   estimate std.error p.value
+# 3 log10.Zostera.proxy.production.rate log10.mean.fetch -0.1819258 0.1306524  0.1711
+# 2 log10.Zostera.proxy.production.rate     Salinity.ppt -0.1816213 0.1353363  0.1868
+# 1 log10.Zostera.proxy.production.rate    Temperature.C  0.1226584 0.1163773  0.2979
+
+
+# Hierarchical model (plot level): ZOSTERA GENETICS
+Zproduction.plot.5 <- lme(log10.Zostera.proxy.production.rate ~ 
+                          # #   Latitude
+                          # # + Temperature.C
+                          # # + Salinity.ppt
+                          # # # + Day.length.hours
+                          # # + log10.mean.fetch
+                          # # # + Depth.Categorical
+                          # + pop.density.2015
+                          # # + log10.Zostera.AG.mass.imputed
+                          # # + log10.Zostera.shoots.core.imputed
+                          # # + log10.Zostera.sheath.length
+                          # # + log10.Zostera.longest.leaf.length
+                          + AllelicRichness
+                          # + log10.Leaf.PercN.imputed
+                          # + log10.periphyton.mass.per.g.zostera.imputed
+                          # + log10.mesograzer.mass.per.g.plant.imputed
+                          # + log10.crustacean.mass.per.g.plant.imputed
+                          # + log10.gastropod.mass.per.g.plant.imputed
+                          # + grazer.richness.site
+                          # # + squid.survival.24hr.imputed
+                          # # + amphipod.survival.24hr # many missing value because only done at some sites
+                          , random = ~1 | Coast/Site
+                          , na.action = na.omit
+                          , data = ZEN_2014_master_data_49_imputed)
+summary(Zproduction.plot.5)
+# N = 965
+# AIC = 53.93175
+sem.coefs(list(Zproduction.plot.5), ZEN_2014_master_data_49_imputed, standardize = "scale")
+#                              response       predictor     estimate std.error p.value
+# 1 log10.Zostera.proxy.production.rate AllelicRichness -0.001388548 0.1198613  0.9908
+
+
+# Hierarchical model (plot level): TOP-DOWN CONTROL
+Zproduction.plot.6 <- lme(log10.Zostera.proxy.production.rate ~ 
+                          #   Latitude
+                          # + Temperature.C
+                          # + Salinity.ppt
+                          # # + Day.length.hours
+                          # + log10.mean.fetch
+                          # # + Depth.Categorical
+                          # + pop.density.2015
+                          # # + log10.Zostera.AG.mass.imputed
+                          # # + log10.Zostera.shoots.core.imputed
+                          # # + log10.Zostera.sheath.length
+                          # # + log10.Zostera.longest.leaf.length
+                          # + AllelicRichness
+                          # + log10.Leaf.PercN.imputed
+                          # + log10.periphyton.mass.per.g.zostera.imputed
+                          + log10.mesograzer.mass.per.g.plant.imputed
+                          + log10.crustacean.mass.per.g.plant.imputed
+                          + log10.gastropod.mass.per.g.plant.imputed
+                          + grazer.richness.site
+                          # + squid.survival.24hr.imputed
+                          # + amphipod.survival.24hr # many missing value because only done at some sites
+                          , random = ~1 | Coast/Site
+                          , na.action = na.omit
+                          , data = ZEN_2014_master_data_49_imputed)
+summary(Zproduction.plot.6)
+# N = 965
+# AIC = 66.52063
+sem.coefs(list(Zproduction.plot.6), ZEN_2014_master_data_49_imputed, standardize = "scale")
+# 1 log10.Zostera.proxy.production.rate log10.mesograzer.mass.per.g.plant.imputed -0.137960425 0.05729216  0.0162
+# 4 log10.Zostera.proxy.production.rate                      grazer.richness.site  0.193770975 0.11803229  0.1078
+# 3 log10.Zostera.proxy.production.rate  log10.gastropod.mass.per.g.plant.imputed  0.025695400 0.04712337  0.5857
+# 2 log10.Zostera.proxy.production.rate log10.crustacean.mass.per.g.plant.imputed  0.003211136 0.04692921  0.9455
+
+
+# SUMMARY OF RESULTS: PLOT level
+# By far the best model is the "competition" model including only periphyton biomass. 
+# Since the relationships with periphyton biomass is positive, however, this
+# is better thought of as a productivity model that integrates factors promoting plant
+# growth (e.g., light, other nutrients, perhaps flow, etc.). What's good for periphyton 
+# is good for eelgrass.
+
+
+###################################################################################
+# MODELS OF EELGRASS PRODUCTIVITY: SITE LEVEL (SIMPLE)                            #
+###################################################################################
+
+# Linear model (site level): PRODUCTIVITY
+Zproduction.lm.1 <- lm(log10.Zostera.proxy.production.rate.site ~ 
+                         log10.periphyton.mass.per.g.zostera.site 
+                      + Leaf.PercN.site
+                      , data = ZEN_2014_site_means_49)
+summary(Zproduction.lm.1)
+#                                          Estimate Std. Error t value Pr(>|t|)    
+# (Intercept)                               3.42376    0.21510  15.917   <2e-16 ***
+# log10.periphyton.mass.per.g.zostera.site  0.12984    0.06684   1.943   0.0582 .  
+# Leaf.PercN.site                           0.08343    0.09172   0.910   0.3678    
+# 
+# Residual standard error: 0.3371 on 46 degrees of freedom
+# Multiple R-squared:  0.1061,	Adjusted R-squared:  0.06721 
+# F-statistic: 2.729 on 2 and 46 DF,  p-value: 0.07584
+AIC(Zproduction.lm.1) # 37.39819
+
+
+# Linear model (site level): ABIOTIC ENVIRONMENT
+Zproduction.lm.2 <- lm(log10.Zostera.proxy.production.rate.site ~ 
+                         Temperature.C 
+                       + Salinity.ppt
+                       + Day.length.hours 
+                       + log10.mean.fetch
+                       , data = ZEN_2014_site_means_49)
+summary(Zproduction.lm.2)
+#                    Estimate Std. Error t value Pr(>|t|)    
+# (Intercept)       4.6466078  0.5742101   8.092 2.98e-10 ***
+# Temperature.C    -0.0007009  0.0105905  -0.066   0.9475    
+# Salinity.ppt     -0.0071194  0.0072775  -0.978   0.3333    
+# Day.length.hours -0.0615322  0.0248721  -2.474   0.0173 *  
+# log10.mean.fetch -0.0603455  0.1207838  -0.500   0.6198    
+# 
+# Residual standard error: 0.3379 on 44 degrees of freedom
+# Multiple R-squared:  0.1408,	Adjusted R-squared:  0.06271 
+# F-statistic: 1.803 on 4 and 44 DF,  p-value: 0.1454
+AIC(Zproduction.lm.2) # 39.45608
+
+
+# Linear model (site level): GEOGRAPHY
+Zproduction.lm.3 <- lm(log10.Zostera.proxy.production.rate.site ~ 
+                         Latitude
+                       + Ocean 
+                       + Coast
+                       , data = ZEN_2014_site_means_49)
+summary(Zproduction.lm.3)
+#                     Estimate Std. Error t value Pr(>|t|)    
+# (Intercept)         3.491516   0.328043  10.643 9.43e-14 ***
+#   Latitude           -0.004765   0.005966  -0.799  0.42879    
+# OceanPacific        0.186335   0.175558   1.061  0.29431    
+# CoastEast.Pacific   0.054907   0.151652   0.362  0.71904    
+# CoastWest.Atlantic  0.389707   0.140842   2.767  0.00824 ** 
+#   CoastWest.Pacific         NA         NA      NA       NA    
+# 
+# Residual standard error: 0.3091 on 44 degrees of freedom
+# Multiple R-squared:  0.281,	Adjusted R-squared:  0.2156 
+# F-statistic: 4.298 on 4 and 44 DF,  p-value: 0.005068
+AIC(Zproduction.lm.3) # 30.73131
+
+
+# Linear model (site level): ZOSTERA GENETICS
+Zproduction.lm.4 <- lm(log10.Zostera.proxy.production.rate.site ~ 
+                         AllelicRichness
+                       , data = ZEN_2014_site_means_49)
+summary(Zproduction.lm.4)
+#                 Estimate Std. Error t value Pr(>|t|)    
+# (Intercept)      3.24733    0.17966  18.075   <2e-16 ***
+#   AllelicRichness  0.04612    0.03627   1.272     0.21    
+# 
+# Residual standard error: 0.3468 on 47 degrees of freedom
+# Multiple R-squared:  0.03326,	Adjusted R-squared:  0.01269 
+# F-statistic: 1.617 on 1 and 47 DF,  p-value: 0.2098
+AIC(Zproduction.lm.4) # 39.2355
+
+
+# SUMMARY OF RESULTS: SITE level
+# Looks like it's all geography. West Atlantic has more productive 
+# eelgrass than anywhere else. Who knew?  Reasons remain obscure since there 
+# is little or no correlation with leaf N or the usual abiotic factors. 
+
+# Zostera proxy production x latitude 
+Zprodn.lat = ggplot(ZEN_2014_site_means, aes(x = Latitude, y = log10.Zostera.proxy.production.rate.site, col = Ocean)) +
+  geom_point(size = 5) +
+  geom_text(aes(label = unique(ZEN_2014_site_means$Site)), hjust = -0.25, vjust = 0) +
+  scale_color_manual(values = c("blue",  "forestgreen")) +
+  xlab("\n  Latitude") +  
+  ylab("log Zostera production (proxy) \n") +  
+  scale_x_continuous(limits = c(30,72))+
+  #   scale_y_continuous(limits=c(0,3))+
+  theme_bw(base_size = 18) +
+  theme(legend.position = "none", panel.grid.major = element_blank(), panel.grid.minor = element_blank(),
+        panel.border = element_rect(size = 1.5),axis.ticks = element_line(size = 1.5))
+Zprodn.lat + geom_smooth(method = lm, fullrange = F, se = F, lwd = 1.5, col="black", na.rm=T)
 
 
 ###################################################################################
@@ -2942,6 +3279,7 @@ RF.periphyton.1 = randomForest(log10.periphyton.mass.per.g.zostera ~
   # + GenotypicRichness
   + AllelicRichness
   # + Inbreeding
+  + log10.Zostera.proxy.production.rate
   + log10.Zostera.AG.mass
   + log10.macrophytes.total.AG.mass.core
   + log10.Zostera.shoots.core
@@ -2992,6 +3330,7 @@ RF.periphyton.2 = randomForest(log10.periphyton.mass.per.g.zostera ~
                                # + GenotypicRichness
                                + AllelicRichness
                                # + Inbreeding
+                               + log10.Zostera.proxy.production.rate
                                + log10.Zostera.AG.mass
                                + log10.macrophytes.total.AG.mass.core
                                + log10.Zostera.shoots.core
@@ -3240,12 +3579,137 @@ sem.coefs(list(periphyton.plot.6), ZEN_2014_master_data_imputed, standardize = "
 
 # SUMMARY OF RESULTS: PLOT level
 # Best model (AIC = 471.4786) is productivity with strong positive effect of sheath length 
-# (proxy for Zostera growth rate). Next best is seagrass structure + prodictivity model, 
+# (proxy for Zostera growth rate). Next best is seagrass structure + productivity model, 
 # which adds a highly significant positive effect of leaf length. These results seem best 
 # interpreted as simple bottom-up control: periphyton biomass accumulation responds to the
 # same factors that stimulate Zostera growth and leaf elongation. Note that this interpretation 
 # is opposite the hypothesis suggested at workshop that periphyton biomass should be greatest on 
 # slow-growing leaves.
+
+
+###################################################################################
+# MODELS OF PERIPHYTON BIOMASS: SITE LEVEL (SIMPLE)                               #
+###################################################################################
+
+# Linear model (site level): SEAGRASS STRUCTURE
+periphyton.lm.1 <- lm(log10.periphyton.mass.per.g.zostera.site ~ 
+                        log10.Zostera.longest.leaf.length.cm.site 
+                      + log10.Zostera.shoots.core.site
+                      # + log10.Zostera.AG.mass.site 
+                      , data = ZEN_2014_site_means_49)
+summary(periphyton.lm.1)
+#                                           Estimate Std. Error t value Pr(>|t|)    
+# (Intercept)                                -4.1074     1.1706  -3.509  0.00102 ** 
+#   log10.Zostera.longest.leaf.length.cm.site   1.6922     0.3866   4.377 6.86e-05 ***
+#   log10.Zostera.shoots.core.site              0.1117     0.2720   0.411  0.68325    
+# 
+# Residual standard error: 0.6089 on 46 degrees of freedom
+# Multiple R-squared:  0.3534,	Adjusted R-squared:  0.3253 
+# F-statistic: 12.57 on 2 and 46 DF,  p-value: 4.417e-05
+AIC(periphyton.lm.1) # 95.3359
+
+
+# Linear model (site level): PRODUCTIVITY
+periphyton.lm.2 <- lm(log10.periphyton.mass.per.g.zostera.site ~ 
+                        log10.Zostera.sheath.length.site 
+                      + Leaf.PercN.site
+                      , data = ZEN_2014_site_means_49)
+summary(periphyton.lm.2)
+#                                  Estimate Std. Error t value Pr(>|t|)    
+# (Intercept)                      -2.49090    0.35580  -7.001 9.09e-09 ***
+#   log10.Zostera.sheath.length.site  1.55954    0.26174   5.958 3.34e-07 ***
+#   Leaf.PercN.site                  -0.02562    0.15671  -0.163    0.871    
+# 
+# Residual standard error: 0.5587 on 46 degrees of freedom
+# Multiple R-squared:  0.4555,	Adjusted R-squared:  0.4319 
+# F-statistic: 19.24 on 2 and 46 DF,  p-value: 8.46e-07
+AIC(periphyton.lm.2) # 86.90933
+
+
+# Linear model (site level): SEAGRASS STRUCTURE + PRODUCTIVITY
+periphyton.lm.3 <- lm(log10.periphyton.mass.per.g.zostera.site ~ 
+                        log10.Zostera.longest.leaf.length.cm.site 
+                      + log10.Zostera.shoots.core.site
+                      + log10.Zostera.sheath.length.site 
+                      + Leaf.PercN.site
+                      , data = ZEN_2014_site_means_49)
+summary(periphyton.lm.3)
+#                                           Estimate Std. Error t value Pr(>|t|)   
+# (Intercept)                               -2.20753    1.26066  -1.751  0.08690 . 
+# log10.Zostera.longest.leaf.length.cm.site -0.81855    0.86841  -0.943  0.35104   
+# log10.Zostera.shoots.core.site             0.16149    0.25171   0.642  0.52448   
+# log10.Zostera.sheath.length.site           2.33199    0.74345   3.137  0.00304 **
+# Leaf.PercN.site                           -0.06309    0.16048  -0.393  0.69612   
+# 
+# Residual standard error: 0.5615 on 44 degrees of freedom
+# Multiple R-squared:  0.474,	Adjusted R-squared:  0.4262 
+# F-statistic: 9.914 on 4 and 44 DF,  p-value: 8.3e-06
+AIC(periphyton.lm.3) # 89.21539
+
+
+# Linear model (site level): ABIOTIC ENVIRONMENT
+periphyton.lm.4 <- lm(log10.periphyton.mass.per.g.zostera.site ~ 
+                        Temperature.C 
+                      + Salinity.ppt
+                      + Day.length.hours 
+                      + log10.mean.fetch
+                      , data = ZEN_2014_site_means_49)
+summary(periphyton.lm.4)
+#                  Estimate Std. Error t value Pr(>|t|)  
+# (Intercept)       0.97226    1.15835   0.839   0.4058  
+# Temperature.C    -0.02853    0.02136  -1.335   0.1887  
+# Salinity.ppt      0.01865    0.01468   1.270   0.2106  
+# Day.length.hours -0.12077    0.05017  -2.407   0.0203 *
+#   log10.mean.fetch -0.18314    0.24366  -0.752   0.4563  
+# 
+# Residual standard error: 0.6817 on 44 degrees of freedom
+# Multiple R-squared:  0.2247,	Adjusted R-squared:  0.1542 
+# F-statistic: 3.188 on 4 and 44 DF,  p-value: 0.022
+AIC(periphyton.lm.4) # 108.2279
+
+
+# Linear model (site level): ZOSTERA GENETICS
+periphyton.lm.5 <- lm(log10.periphyton.mass.per.g.zostera.site ~ 
+                        log10.AllelicRichness 
+                      , data = ZEN_2014_site_means_49)
+summary(periphyton.lm.5)
+#                       Estimate Std. Error t value Pr(>|t|)    
+# (Intercept)            -1.9095     0.4263  -4.480 4.76e-05 ***
+#   log10.AllelicRichness   1.4242     0.6338   2.247   0.0294 *  
+# 
+# Residual standard error: 0.7118 on 47 degrees of freedom
+# Multiple R-squared:  0.09702,	Adjusted R-squared:  0.0778 
+# F-statistic:  5.05 on 1 and 47 DF,  p-value: 0.02937
+AIC(periphyton.lm.4) # 108.2279
+
+
+# Linear model (site level): GEOGRAPHY
+periphyton.lm.6 <- lm(log10.periphyton.mass.per.g.zostera.site ~ 
+                         Latitude
+                       + Ocean 
+                       + Coast
+                       , data = ZEN_2014_site_means_49)
+summary(periphyton.lm.6)
+#                    Estimate Std. Error t value Pr(>|t|)  
+# (Intercept)         0.04525    0.63823   0.071    0.944  
+# Latitude           -0.02734    0.01161  -2.355    0.023 *
+#   OceanPacific        0.40574    0.34156   1.188    0.241  
+# CoastEast.Pacific   0.18169    0.29505   0.616    0.541  
+# CoastWest.Atlantic -0.11028    0.27402  -0.402    0.689  
+# CoastWest.Pacific        NA         NA      NA       NA  
+# 
+# Residual standard error: 0.6014 on 44 degrees of freedom
+# Multiple R-squared:  0.3965,	Adjusted R-squared:  0.3416 
+# F-statistic: 7.226 on 4 and 44 DF,  p-value: 0.0001456
+AIC(periphyton.lm.6) # 95.95605
+
+# RESULTS OF SITE LEVEL ANALYSIS  
+# Strongest model is productivity (AIC = 86.90933), with strong positive effect of 
+# Zostera sheath length (proxy for Zostera productivity rate). Reasonably close model 
+# is seagrass structure + productivity, which however does not add any significant predictors. 
+# As is true of the model predicting Zostera productivity, the close statistical correlation
+# between Zostera productivity and periphyton biomass presumably reflects favorable
+# growth conditions for both. 
 
 
 ###################################################################################
@@ -3594,103 +4058,6 @@ sem.coefs(list(crustaceans6), ZEN_2014_master_data_49_imputed, standardize = "sc
 # tends to be higher in sparse, short-leaved clumps with periphyton. This presumably reflects
 # some combination of attraction of mobile epifauna to epiphytic food and accumulationg on 
 # nearest structure in a patchy landscape. Note that results differ at site level (see below).  
-
-
-###################################################################################
-# MODELS OF PERIPHYTON BIOMASS: SITE LEVEL (SIMPLE)                               #
-###################################################################################
-
-# Linear model (site level): SEAGRASS STRUCTURE
-periphyton.lm.1 <- lm(log10.periphyton.mass.per.g.zostera.site ~ 
-                        log10.Zostera.longest.leaf.length.cm.site 
-                      + log10.Zostera.shoots.core.site
-                      # + log10.Zostera.AG.mass.site 
-                      , data = ZEN_2014_site_means_49)
-summary(periphyton.lm.1)
-#                                           Estimate Std. Error t value Pr(>|t|)    
-# (Intercept)                                -4.1074     1.1706  -3.509  0.00102 ** 
-#   log10.Zostera.longest.leaf.length.cm.site   1.6922     0.3866   4.377 6.86e-05 ***
-#   log10.Zostera.shoots.core.site              0.1117     0.2720   0.411  0.68325    
-# 
-# Residual standard error: 0.6089 on 46 degrees of freedom
-# Multiple R-squared:  0.3534,	Adjusted R-squared:  0.3253 
-# F-statistic: 12.57 on 2 and 46 DF,  p-value: 4.417e-05
-AIC(periphyton.lm.1) # 95.3359
-
-
-# Linear model (site level): PRODUCTIVITY
-periphyton.lm.2 <- lm(log10.periphyton.mass.per.g.zostera.site ~ 
-                        log10.Zostera.sheath.length.site 
-                      + Leaf.PercN.site
-                      , data = ZEN_2014_site_means_49)
-summary(periphyton.lm.2)
-#                                  Estimate Std. Error t value Pr(>|t|)    
-# (Intercept)                      -2.49090    0.35580  -7.001 9.09e-09 ***
-#   log10.Zostera.sheath.length.site  1.55954    0.26174   5.958 3.34e-07 ***
-#   Leaf.PercN.site                  -0.02562    0.15671  -0.163    0.871    
-# 
-# Residual standard error: 0.5587 on 46 degrees of freedom
-# Multiple R-squared:  0.4555,	Adjusted R-squared:  0.4319 
-# F-statistic: 19.24 on 2 and 46 DF,  p-value: 8.46e-07
-AIC(periphyton.lm.2) # 86.90933
-
-
-# Linear model (site level): SEAGRASS STRUCTURE + PRODUCTIVITY
-periphyton.lm.3 <- lm(log10.periphyton.mass.per.g.zostera.site ~ 
-                        log10.Zostera.longest.leaf.length.cm.site 
-                      + log10.Zostera.shoots.core.site
-                      + log10.Zostera.sheath.length.site 
-                      + Leaf.PercN.site
-                      , data = ZEN_2014_site_means_49)
-summary(periphyton.lm.3)
-#                                           Estimate Std. Error t value Pr(>|t|)   
-# (Intercept)                               -2.20753    1.26066  -1.751  0.08690 . 
-# log10.Zostera.longest.leaf.length.cm.site -0.81855    0.86841  -0.943  0.35104   
-# log10.Zostera.shoots.core.site             0.16149    0.25171   0.642  0.52448   
-# log10.Zostera.sheath.length.site           2.33199    0.74345   3.137  0.00304 **
-#   Leaf.PercN.site                           -0.06309    0.16048  -0.393  0.69612   
-# 
-# Residual standard error: 0.5615 on 44 degrees of freedom
-# Multiple R-squared:  0.474,	Adjusted R-squared:  0.4262 
-# F-statistic: 9.914 on 4 and 44 DF,  p-value: 8.3e-06
-AIC(periphyton.lm.3) # 89.21539
-
-
-# Linear model (site level): ABIOTIC ENVIRONMENT
-periphyton.lm.4 <- lm(log10.periphyton.mass.per.g.zostera.site ~ 
-                        Temperature.C 
-                      + Salinity.ppt
-                      + Day.length.hours 
-                      + log10.mean.fetch
-                      , data = ZEN_2014_site_means_49)
-summary(periphyton.lm.4)
-#                  Estimate Std. Error t value Pr(>|t|)  
-# (Intercept)       0.97226    1.15835   0.839   0.4058  
-# Temperature.C    -0.02853    0.02136  -1.335   0.1887  
-# Salinity.ppt      0.01865    0.01468   1.270   0.2106  
-# Day.length.hours -0.12077    0.05017  -2.407   0.0203 *
-#   log10.mean.fetch -0.18314    0.24366  -0.752   0.4563  
-# 
-# Residual standard error: 0.6817 on 44 degrees of freedom
-# Multiple R-squared:  0.2247,	Adjusted R-squared:  0.1542 
-# F-statistic: 3.188 on 4 and 44 DF,  p-value: 0.022
-AIC(periphyton.lm.4) # 108.2279
-
-
-# Linear model (site level): ZOSTERA GENETICS
-periphyton.lm.5 <- lm(log10.periphyton.mass.per.g.zostera.site ~ 
-                        log10.AllelicRichness 
-                      , data = ZEN_2014_site_means_49)
-summary(periphyton.lm.5)
-#                       Estimate Std. Error t value Pr(>|t|)    
-# (Intercept)            -1.9095     0.4263  -4.480 4.76e-05 ***
-#   log10.AllelicRichness   1.4242     0.6338   2.247   0.0294 *  
-# 
-# Residual standard error: 0.7118 on 47 degrees of freedom
-# Multiple R-squared:  0.09702,	Adjusted R-squared:  0.0778 
-# F-statistic:  5.05 on 1 and 47 DF,  p-value: 0.02937
-AIC(periphyton.lm.4) # 108.2279
-
 
 
 ###################################################################################
