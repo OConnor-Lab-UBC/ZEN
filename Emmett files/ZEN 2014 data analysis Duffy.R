@@ -4768,6 +4768,10 @@ sem.coefs(list(crustaceans6), ZEN_2014_master_data_49_imputed, standardize = "sc
 #                                    response       predictor   estimate std.error p.value
 # 1 log10.crustacean.mass.per.g.plant.imputed AllelicRichness 0.05010693 0.1144681  0.6637
 
+x <- list(crustaceans1, crustaceans2, crustaceans3, crustaceans4, crustaceans5, crustaceans6)
+sem.model.fits(x)
+
+
 # SUMMARY OF RESULTS: PLOT level
 # Best model (AIC = 1409.433) is seagrass structure: crustacean biomass higher in sparser, 
 # shorter-leaved eelgrass stands. Close second is productivity model (AIC = 1410.553) with
@@ -5823,7 +5827,7 @@ crust.list.1 <- list(
     + Temperature.C
     + Salinity.ppt
     + log10.mean.fetch
-    + log10.Leaf.PercN.imputed
+    # + log10.Leaf.PercN.imputed
     + AllelicRichness
     + log10.Zostera.proxy.production.rate
     + log10.Zostera.shoots.core.imputed
@@ -5838,7 +5842,7 @@ crust.list.1 <- list(
                 + Temperature.C
                 + Salinity.ppt
                 + log10.mean.fetch
-                + log10.Leaf.PercN.imputed
+                # + log10.Leaf.PercN.imputed
                 + AllelicRichness
                 + log10.Zostera.shoots.core.imputed
                 + log10.Zostera.longest.leaf.length
@@ -5857,7 +5861,7 @@ crust.list.1 <- list(
                + Temperature.C
                + Salinity.ppt
                + log10.mean.fetch
-               + log10.Leaf.PercN.imputed
+               # + log10.Leaf.PercN.imputed
                + AllelicRichness
                + log10.Zostera.shoots.core.imputed
                + log10.Zostera.longest.leaf.length
@@ -5877,7 +5881,7 @@ crust.list.1 <- list(
                + Temperature.C
                + Salinity.ppt
                + log10.mean.fetch
-               + log10.Leaf.PercN.imputed
+               # + log10.Leaf.PercN.imputed
                + AllelicRichness
                + log10.Zostera.shoots.core.imputed
                + log10.Zostera.longest.leaf.length
@@ -5896,7 +5900,7 @@ crust.list.1 <- list(
                + Temperature.C
                + Salinity.ppt
                + log10.mean.fetch
-               + log10.Leaf.PercN.imputed
+               # + log10.Leaf.PercN.imputed
                + AllelicRichness
                # + log10.Zostera.shoots.core.imputed
                + log10.Zostera.longest.leaf.length
@@ -5915,7 +5919,7 @@ crust.list.1 <- list(
                 + Temperature.C
                 + Salinity.ppt
                 + log10.mean.fetch
-                + log10.Leaf.PercN.imputed
+                # + log10.Leaf.PercN.imputed
                 + AllelicRichness
                 # + log10.Zostera.shoots.core.imputed
                 # + log10.Zostera.longest.leaf.length
@@ -5929,10 +5933,8 @@ crust.list.1 <- list(
                 , random = ~1 | Coast/Site
                 , na.action = na.omit
                 , data = ZEN_2014_master_data_49_imputed)
-  
   )
   
-
 
 # Run goodness-of-fit tests
 sem.fit(
@@ -5940,16 +5942,14 @@ sem.fit(
   modelList = crust.list.1, 
   data = ZEN_2014_master_data_49_imputed,
   # Additional variables who have no directed paths in the SEM but should be included in d-sep tests
-  # add.vars = c("log10.Leaf.PercN.imputed"), 
+  add.vars = c("log10.Leaf.PercN.imputed"), 
   # Define the grouping variable
   grouping.vars = "Coast", "Site",
-  # Define the variables that are identical at the level of the grouping variable
-  # top.level.vars = c("Temperature.C", "Salinity.ppt", "AllelicRichness"),
   # Variables that should have correlated errors
   corr.errors = c("log10.Zostera.proxy.production.rate ~~ log10.Zostera.AG.mass.imputed")
 )
 
-sem.coefs(crust.list.1, ZEN_2014_master_data_49_imputed, standardize = "scale")
+sem.coefs(crust.list.1, ZEN_2014_master_data_49_imputed, corr.errors = c("log10.Zostera.proxy.production.rate ~~ log10.Zostera.AG.mass.imputed"), standardize = "scale")
   
 
 
