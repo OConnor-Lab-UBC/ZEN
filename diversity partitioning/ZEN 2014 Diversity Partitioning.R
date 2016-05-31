@@ -18,7 +18,7 @@ cleanup = function(mat, lvls) {
   mat[is.na(mat)] = 0
   
   # Remove meta-data
-  mat = mat[, -c(1:length(lvls))]
+  mat = mat[, -c(0:length(lvls))]
   
   # Convert to numeric matrix
   mat = data.matrix(mat)
@@ -336,20 +336,40 @@ rownames(D.mat.site) = unique(zen$Site)
 # Clean up matrix
 D.mat.site = cleanup(D.mat.site, 0)
 
-# Put each row in a list
-D.list.site = alply(D.mat.site, 1)
-
-names(D.list.site) = rownames(D.mat.site)
+# # Put each row in a list
+# D.list.site = alply(D.mat.site, 1)
+# 
+# names(D.list.site) = rownames(D.mat.site)
 
 # Run iNEXT
-zen.inext = llply(D.list.site, .progress = "text", iNEXT)
+# zen.inext = llply(D.list.site, .progress = "text", iNEXT)
+
+zen.inext = iNEXT(t(D.mat.site))
 
 # Plot results and store in a list
-zen.inext.plot = llply(names(zen.inext), function(i) ggiNEXT(zen.inext[[i]]) + labs(title = i))
+# zen.inext.plot = ggiNEXT(zen.inext, facet.var = "site") + facet_grid(scales = "free")
+# 
+# # Output results 
+# pdf(paste0("Figures/Rarefaction extrapolation curves.PDF"),
+#     width = 25, height = 30)
+# bquiet = print(zen.inext.plot)
+# dev.off() 
 
-# Output results 
-pdf(paste0("Figures/Rarefaction extrapolation curves.PDF"),
-    width = 25, height = 30)
-bquiet = print(do.call(grid.arrange, zen.inext.plot))
-dev.off() 
+# Get estimated richness at lowest level of coverage
+zen.estD = estimateD(t(D.mat.site), base = "coverage")
 
+# Unite with raw richness information
+zen.estD = data.frame(zen.estD, raw = rowSums(D.mat.site > 0))
+
+names(zen.estD)[5] = "rarefied"
+
+# Bivariate correlation
+cor(zen.estD$rarefied, zen.estD$raw)
+
+# Plot results
+ggplot(zen.estD, aes(x = raw, y = rarefied)) +
+  geom_point() +
+  stat_smooth(method = "lm") +
+  labs(x = "Raw S", y = "Rarefied S")
+
+write.csv(zen.estD[, c("Site", "m", "SC", "rarefied", "raw")], "ZEN 2014 Rarefaction.csv")
