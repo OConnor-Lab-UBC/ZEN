@@ -4,50 +4,12 @@
 library(divpart)
 library(ggplot2)
 library(gridExtra)
+library(iNEXT)
 library(plyr)
 library(reshape2)
 library(vegan)
 
-setwd("C:/Users/jslef/OneDrive/Documents/ZEN/ZEN 2/Diversity Partitioning")
-
-# Load epifauna data
-epifauna = read.table("ZENnverts.v8.txt", header = T)
-
-# Subset epifauna to only include mesograzers
-epifauna = subset(epifauna, Type == "Mesograzer")
-
-# Load metadata 
-metad = read.csv("zen_2014_metadata.csv")
-
-# Bring metadata and epifaunal data together
-zen = merge(
-  metad[, c(1:6, 9:10, 14:23)],
-  epifauna[, c(1:4, 7:9, 12, 15, 17, 20, 27, 31, 36)]# c(1:6, 11:12, 13, 17, 32)]
-)
-
-# Remove Sampling.Time > 1
-zen = subset(zen, Sampling.Time == 1)
-
-# Merge Subsite and subsite code
-zen$Site = apply(zen, 1, function(x) paste0(x["Site.Code"], ".", x["Subsite"]))
-                                              
-# Drop Croatia from the analysis
-# zen = subset(zen, Site.Code != "CR")
-
-# Remove Portugal B from the analysis
-# zen = subset(zen, Site != "PO.B")
-
-# Creating nesting level
-lvls = c("unique.ID", "Site", "Coast", "Ocean") 
-
-# Check to see if unique entries in each level are listed in decreasing order
-sapply(lvls, function(x) length(unique(zen[, x])))
-
-##########
-
-# Create sample-by-species matrix
-D.mat = dcast(zen, as.formula(paste0(paste(lvls, collapse = " + "), " ~ Original.Species")), 
-              fun.aggregate = sum, value.var = "Total.Abundance")
+setwd("C:/Users/jslef/OneDrive/Documents/GitHub/ZEN/Diversity Partitioning")
 
 # Create function to clean-up matrix
 cleanup = function(mat, lvls) {
@@ -74,6 +36,47 @@ cleanup = function(mat, lvls) {
   return(mat) 
   
 }
+
+##########
+
+# Load epifauna data
+epifauna = read.table("ZENnverts.v8.txt", header = T)
+
+# Subset epifauna to only include mesograzers
+epifauna = subset(epifauna, Type == "Mesograzer")
+
+# Load metadata 
+metad = read.csv("zen_2014_metadata.csv")
+
+# Bring metadata and epifaunal data together
+zen = merge(
+  metad[, c(1:6, 9:10, 14:23)],
+  epifauna[, c(1:4, 7:9, 12, 15, 17, 20, 27, 31, 36)]# c(1:6, 11:12, 13, 17, 32)]
+)
+
+# Remove Sampling.Time > 1
+zen = subset(zen, Sampling.Time == 1)
+
+# Merge Subsite and subsite code
+zen$Site = apply(zen, 1, function(x) paste0(x["Site.Code"], ".", x["Subsite"]))
+
+# Drop Croatia from the analysis
+# zen = subset(zen, Site.Code != "CR")
+
+# Remove Portugal B from the analysis
+# zen = subset(zen, Site != "PO.B")
+
+# Creating nesting level
+lvls = c("unique.ID", "Site", "Coast", "Ocean") 
+
+# Check to see if unique entries in each level are listed in decreasing order
+sapply(lvls, function(x) length(unique(zen[, x])))
+
+##########
+
+# Create sample-by-species matrix
+D.mat = dcast(zen, as.formula(paste0(paste(lvls, collapse = " + "), " ~ Original.Species")), 
+              fun.aggregate = sum, value.var = "Total.Abundance")
 
 D.mat = cleanup(D.mat, lvls)
 
@@ -109,7 +112,7 @@ names(zen.part.list) = c("Richness", "Shannon", "Simpson")
 
 # How do alpha, beta, and gamma diversities scale with increasing levels of the hierarchy?
 part.plot.list = lapply(names(zen.part.list), function(i) {
-
+  
   # Melt data.frame
   zen.part.melt = melt(zen.part.list[[i]], id.vars = c("level"), measure.vars = c("alpha", "gamma", "beta.add"))
   
@@ -141,7 +144,7 @@ dev.off()
 # How does beta diversity scale with alpha and gamma diversities?
 zen.part.plot.list = lapply(names(zen.part.list), function(i) {
   
- ggplot(zen.part.list[[i]], aes(x = alpha, y = beta.add)) +
+  ggplot(zen.part.list[[i]], aes(x = alpha, y = beta.add)) +
     geom_point(size = 3) +
     geom_abline(slope = 1, lty = 2, lwd = 1) + 
     labs(x = "Alpha diversity", y = "Additive beta diversity", title = i) +
@@ -227,7 +230,7 @@ site.mat.list = lapply(c("Species", "Genus", "Family", "Class"), function(i) {
   
   mat = dcast(subset(zen, Site.Code != "CR"), as.formula(paste0(paste(lvls[-1], collapse = " + "), " ~ ", i)), 
               fun.aggregate = sum, value.var = "Total.Abundance") 
-
+  
   mat = cleanup(mat, lvls[-1])
   
   # Remove NA column
@@ -241,7 +244,7 @@ site.mat.list = lapply(c("Species", "Genus", "Family", "Class"), function(i) {
 lapply(site.mat.list, dim)
 
 names(site.mat.list) = c("Species", "Genus", "Family", "Class")
-  
+
 # Run NMDS and extract axes
 nmds.list = lapply(names(site.mat.list), function(i) {
   
@@ -315,11 +318,38 @@ nmds.loadings = ldply(names(nmds.list), function(i) {
 } )
 
 write.csv(nmds.loadings, "Output/NMDS loadings by taxonomic level.csv")
-  
+
+##########
+
+# Rank abundance curves
+
+
 ##########
 
 # Rarefaction curves
 
+# Summarize species-by-site abundance matrix
+D.mat.site = dcast(zen, Site ~ Original.Species, fun.aggregate = sum, value.var = "Total.Abundance")
 
-  
+rownames(D.mat.site) = unique(zen$Site)
+
+# Clean up matrix
+D.mat.site = cleanup(D.mat.site, 0)
+
+# Put each row in a list
+D.list.site = alply(D.mat.site, 1)
+
+names(D.list.site) = rownames(D.mat.site)
+
+# Run iNEXT
+zen.inext = llply(D.list.site, .progress = "text", iNEXT)
+
+# Plot results and store in a list
+zen.inext.plot = llply(names(zen.inext), function(i) ggiNEXT(zen.inext[[i]]) + labs(title = i))
+
+# Output results 
+pdf(paste0("Figures/Rarefaction extrapolation curves.PDF"),
+    width = 25, height = 30)
+bquiet = print(do.call(grid.arrange, zen.inext.plot))
+dev.off() 
 
