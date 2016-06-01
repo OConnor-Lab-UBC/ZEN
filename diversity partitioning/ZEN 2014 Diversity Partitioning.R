@@ -5,6 +5,7 @@ library(divpart)
 library(ggplot2)
 library(gridExtra)
 library(iNEXT)
+library(moments)
 library(plyr)
 library(reshape2)
 library(vegan)
@@ -323,6 +324,44 @@ write.csv(nmds.loadings, "Output/NMDS loadings by taxonomic level.csv")
 
 # Rank abundance curves
 
+# Create summary abundances by site
+abund.site = ddply(zen, c("Site", "Original.Species"), summarize, abund = sum(Total.Abundance))
+
+# Order species by their abundance within each site
+abund.site.order = dlply(abund.site, "Site", function(x) {
+  
+  # Remove zero individuals
+  x = subset(x, abund > 0)
+  
+  # Order species by abundance
+  x = x[rev(order(x$abund)), ]
+
+  x$Original.Species = factor(x$Original.Species, levels = x$Original.Species)
+  
+  return(x)
+  
+} )
+
+# Plot results
+abund.plot.list = llply(abund.site.order, function(x) 
+  
+  ggplot(x, aes(x = as.factor(as.numeric(Original.Species)), y = abund)) +
+    geom_bar(stat = "identity", col = "black", fill = "white") + 
+    labs(x = "Species", y = "Abundance", title = unique(x$Site)) 
+  
+)
+  
+
+# Output results
+pdf(paste0("Figures/Rank abundance curves.PDF"),
+    width = 30, height = 30)
+bquiet = print(do.call(grid.arrange, abund.plot.list))
+dev.off()
+
+# Get kurtosis value for each site
+kurtosis.df = ldply(abund.site.order, function(i) data.frame(kurtosis = kurtosis(i$abund)))
+  
+# write.csv(kurtosis.df, "Rank abundance kurtosis.csv")
 
 ##########
 
@@ -372,4 +411,4 @@ ggplot(zen.estD, aes(x = raw, y = rarefied)) +
   stat_smooth(method = "lm") +
   labs(x = "Raw S", y = "Rarefied S")
 
-write.csv(zen.estD[, c("Site", "m", "SC", "rarefied", "raw")], "ZEN 2014 Rarefaction.csv")
+# write.csv(zen.estD[, c("Site", "m", "SC", "rarefied", "raw")], "ZEN 2014 Rarefaction.csv")
