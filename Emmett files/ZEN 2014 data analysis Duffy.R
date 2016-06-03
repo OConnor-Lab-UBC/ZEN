@@ -3,11 +3,14 @@
 # ZEN 2014 data analysis (JED)                                                   ##
 # Data are current as of 18 May 2016                                             ##
 # Emmett Duffy (duffye@si.edu)                                                   ##  
-# Last updated 2016-05-25                                                        ##
+# Last updated 2016-06-03                                                        ##
 #                                                                                ##
 ###################################################################################
 
 # TO DO:
+
+# Model outputs have changed probably because data set has been updated. Need to 
+# begin with latest data set and rerun everything and check model outputs. 
 
 # Make sure we are using the latest data file on OSF
 # Do standard model suite for: shoot density, allelic richness
@@ -3121,9 +3124,9 @@ sem.coefs(list(ZAG.plot.6), ZEN_2014_master_data_49_imputed, standardize = "scal
 # 2 log10.Zostera.AG.mass.imputed log10.crustacean.mass.per.g.plant.imputed  0.03075345 0.04559190  0.5001
 # 1 log10.Zostera.AG.mass.imputed log10.mesograzer.mass.per.g.plant.imputed -0.01812772 0.05582886  0.7455 
 
-# Best model based on AIC is "productivity" baed on leaf % N, but the single predictr is non-significant. 
+# Best model based on AIC is "productivity" based on leaf % N, but the single predictor is non-significant. 
 # It appears that Zostera biomass is too variable on a plot scale to be predicted by the coarse 
-# predictor variables we hacve. Interestingly, Zostera plot-sale productivity is much better correlated
+# predictor variables we have. Interestingly, Zostera site-sale productivity is much better correlated
 # with pedictors (see below). 
 
 
@@ -5687,7 +5690,7 @@ sem.coefs(list(gastropods.plot.6), ZEN_2014_master_data_49_imputed, standardize 
 # model is allelic richness (AIC = 1636.848), whicH however, is not even close to significant. 
 # It appears to have lowest AIC score merely because it has only a single predictor so fewer
 # parameters than the other worthless models. The unpredictablity of gastropod biomass at plot 
-# scale contrasts with the situation or crustaceans, which may reflect important differences in 
+# scale contrasts with the situation for crustaceans, which may reflect important differences in 
 # ecology between these sedentary vs mobile grazers. 
 
 
