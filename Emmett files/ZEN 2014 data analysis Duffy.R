@@ -3,11 +3,14 @@
 # ZEN 2014 data analysis (JED)                                                   ##
 # Data are current as of 18 May 2016                                             ##
 # Emmett Duffy (duffye@si.edu)                                                   ##  
-# Last updated 2016-05-21                                                        ##
+# Last updated 2016-06-03                                                        ##
 #                                                                                ##
 ###################################################################################
 
 # TO DO:
+
+# Model outputs have changed probably because data set has been updated. Need to 
+# begin with latest data set and rerun everything and check model outputs. 
 
 # Make sure we are using the latest data file on OSF
 # Do standard model suite for: shoot density, allelic richness
@@ -69,7 +72,7 @@
 # MODELS OF GASTROPOD BIOMASS: PLOT LEVEL (HIERARCHICAL)                          #
 # MODELS OF GASTROPOD BIOMASS: SITE LEVEL (SIMPLE)                                #
 #                                                                                 #
-# SEM                                                                             #
+# SEM: CRUSTACEAN BIOMASS                                                         #
 #                                                                                 #
 ###################################################################################
 
@@ -822,7 +825,7 @@ sum(is.na(ZEN_2014_master_data_imputed$amphipod.survival.24hr)) # 191
 # Also can't include sediment grain size because missing from nearly half of plots. 
 
 levels(ZEN_2014_master_data_49_imputed$Site) # 49 sites
-# write.csv(ZEN_2014_master_data_49_imputed, "ZEN_2014_master_data_imputed_46_2016-01-07.csv", row.names = F)
+# write.csv(ZEN_2014_master_data_49_imputed, "ZEN_2014_master_data_imputed_49_2016-05-23.csv", row.names = F)
 
 
 ###################################################################################
@@ -3121,9 +3124,9 @@ sem.coefs(list(ZAG.plot.6), ZEN_2014_master_data_49_imputed, standardize = "scal
 # 2 log10.Zostera.AG.mass.imputed log10.crustacean.mass.per.g.plant.imputed  0.03075345 0.04559190  0.5001
 # 1 log10.Zostera.AG.mass.imputed log10.mesograzer.mass.per.g.plant.imputed -0.01812772 0.05582886  0.7455 
 
-# Best model based on AIC is "productivity" baed on leaf % N, but the single predictr is non-significant. 
+# Best model based on AIC is "productivity" based on leaf % N, but the single predictor is non-significant. 
 # It appears that Zostera biomass is too variable on a plot scale to be predicted by the coarse 
-# predictor variables we hacve. Interestingly, Zostera plot-sale productivity is much better correlated
+# predictor variables we have. Interestingly, Zostera site-sale productivity is much better correlated
 # with pedictors (see below). 
 
 
@@ -4769,7 +4772,7 @@ sem.coefs(list(crustaceans6), ZEN_2014_master_data_49_imputed, standardize = "sc
 # 1 log10.crustacean.mass.per.g.plant.imputed AllelicRichness 0.05010693 0.1144681  0.6637
 
 x <- list(crustaceans1, crustaceans2, crustaceans3, crustaceans4, crustaceans5, crustaceans6)
-sem.model.fits(x)
+sem.model.fits(x) # This outputs an AIC table 
 
 
 # SUMMARY OF RESULTS: PLOT level
@@ -5687,7 +5690,7 @@ sem.coefs(list(gastropods.plot.6), ZEN_2014_master_data_49_imputed, standardize 
 # model is allelic richness (AIC = 1636.848), whicH however, is not even close to significant. 
 # It appears to have lowest AIC score merely because it has only a single predictor so fewer
 # parameters than the other worthless models. The unpredictablity of gastropod biomass at plot 
-# scale contrasts with the situation or crustaceans, which may reflect important differences in 
+# scale contrasts with the situation for crustaceans, which may reflect important differences in 
 # ecology between these sedentary vs mobile grazers. 
 
 
@@ -5821,47 +5824,84 @@ AIC(gastropod.lm.6) # 121.0225
 # SEM: CRUSTACEAN BIOMASS                                                         #
 ###################################################################################
 
+# Following models include geography, i.e., use only site (not Ocean or Coast) as 
+# random nesting variables.  Note: Model can have either Ocean or Coast but not both,
+# or it hangs up. 
+
+# NOTE: the workaround below to incorporate simple lm for site-level varaibles doesn't 
+# seem to work. The model appears ot be still using N = 1000 points (inctead of correct N = 50)
+# as evidenced by highly significant P values of nearly all predictors for leaf %N. 
+
+# Full model: Bottom-up
+
 crust.list.1 <- list(
   
   crust.1 <- lme(log10.crustacean.mass.per.g.plant.imputed ~
+    Ocean
+    + Latitude
+    # + Coast
     + Temperature.C
     + Salinity.ppt
     + log10.mean.fetch
-    # + log10.Leaf.PercN.imputed
+    + log10.Leaf.PercN.imputed
     + AllelicRichness
     + log10.Zostera.proxy.production.rate
     + log10.Zostera.shoots.core.imputed
     + log10.Zostera.longest.leaf.length
     + log10.Zostera.AG.mass.imputed
     + log10.periphyton.mass.per.g.zostera.imputed
-    , random = ~1 | Coast/Site
+    , random = ~1 | Site
     , na.action = na.omit
     , data = ZEN_2014_master_data_49_imputed),
   
-  peri.1 <- lme(log10.periphyton.mass.per.g.zostera.imputed ~ 
+  gast.1 <- lme(log10.gastropod.mass.per.g.plant.imputed ~
+                  Ocean
+                + Latitude
+                # + Coast
                 + Temperature.C
                 + Salinity.ppt
                 + log10.mean.fetch
-                # + log10.Leaf.PercN.imputed
+                + log10.Leaf.PercN.imputed
+                + AllelicRichness
+                + log10.Zostera.proxy.production.rate
+                + log10.Zostera.shoots.core.imputed
+                + log10.Zostera.longest.leaf.length
+                + log10.Zostera.AG.mass.imputed
+                + log10.periphyton.mass.per.g.zostera.imputed
+                , random = ~1 | Site
+                , na.action = na.omit
+                , data = ZEN_2014_master_data_49_imputed),
+  
+  peri.1 <- lme(log10.periphyton.mass.per.g.zostera.imputed ~ 
+                  Ocean
+                + Latitude
+                # + Coast
+                + Temperature.C
+                + Salinity.ppt
+                + log10.mean.fetch
+                + log10.Leaf.PercN.imputed
                 + AllelicRichness
                 + log10.Zostera.shoots.core.imputed
                 + log10.Zostera.longest.leaf.length
                 + log10.Zostera.AG.mass.imputed
-                # + log10.Zostera.proxy.production.rate
+                + log10.Zostera.proxy.production.rate
                 # + log10.mesograzer.mass.per.g.plant.imputed
                 # + log10.periphyton.mass.per.g.zostera.imputed
                 # + log10.crustacean.mass.per.g.plant.imputed
                 # + log10.gastropod.mass.per.g.plant.imputed
                 # + log10.grazer.richness.site # NOTE: left out because only relevant fo this resposne variable, and missing paths with others kill the chi square fit of SEM
-                , random = ~1 | Coast/Site
+                , random = ~1 | Site
                 , na.action = na.omit
                 , data = ZEN_2014_master_data_49_imputed),
 
   ZAG.1 <- lme(log10.Zostera.AG.mass.imputed ~ 
+                 Ocean
+               + Latitude
+               # + Coast
                + Temperature.C
                + Salinity.ppt
                + log10.mean.fetch
-               # + log10.Leaf.PercN.imputed
+               + log10.Leaf.PercN.imputed
                + AllelicRichness
                + log10.Zostera.shoots.core.imputed
                + log10.Zostera.longest.leaf.length
@@ -5873,15 +5913,18 @@ crust.list.1 <- list(
                # + log10.crustacean.mass.per.g.plant.imputed
                # + log10.gastropod.mass.per.g.plant.imputed
                # + log10.grazer.richness.site
-               , random = ~1 | Coast/Site
+               , random = ~1 | Site
                , na.action = na.omit
                , data = ZEN_2014_master_data_49_imputed),
 
   Zprodn.1 <- lme(log10.Zostera.proxy.production.rate ~ 
-               + Temperature.C
+                    Ocean
+                  + Latitude
+                  # + Coast
+                  + Temperature.C
                + Salinity.ppt
                + log10.mean.fetch
-               # + log10.Leaf.PercN.imputed
+               + log10.Leaf.PercN.imputed
                + AllelicRichness
                + log10.Zostera.shoots.core.imputed
                + log10.Zostera.longest.leaf.length
@@ -5892,18 +5935,21 @@ crust.list.1 <- list(
                # + log10.crustacean.mass.per.g.plant.imputed
                # + log10.gastropod.mass.per.g.plant.imputed
                # + log10.grazer.richness.site
-               , random = ~1 | Coast/Site
+               , random = ~1 | Site
                , na.action = na.omit
                , data = ZEN_2014_master_data_49_imputed),
   
   Zshoot.1 <- lme(log10.Zostera.shoots.core.imputed ~ 
-               + Temperature.C
+                    Ocean
+                  + Latitude
+                  # + Coast
+                  + Temperature.C
                + Salinity.ppt
                + log10.mean.fetch
-               # + log10.Leaf.PercN.imputed
+               + log10.Leaf.PercN.imputed
                + AllelicRichness
                # + log10.Zostera.shoots.core.imputed
-               + log10.Zostera.longest.leaf.length
+               # + log10.Zostera.longest.leaf.length
                + pop.density.2015
                # + log10.Zostera.AG.mass.imputed
                # + log10.mesograzer.mass.per.g.plant.imputed
@@ -5911,15 +5957,18 @@ crust.list.1 <- list(
                # + log10.crustacean.mass.per.g.plant.imputed
                # + log10.gastropod.mass.per.g.plant.imputed
                # + log10.grazer.richness.site
-               , random = ~1 | Coast/Site
+               , random = ~1 | Site
                , na.action = na.omit
                , data = ZEN_2014_master_data_49_imputed),
   
   leaf.1 <- lme(log10.Zostera.longest.leaf.length ~ # should this be lm since most predictors are site level?
+                  Ocean
+                + Latitude
+                # + Coast
                 + Temperature.C
                 + Salinity.ppt
                 + log10.mean.fetch
-                # + log10.Leaf.PercN.imputed
+                + log10.Leaf.PercN.imputed
                 + AllelicRichness
                 # + log10.Zostera.shoots.core.imputed
                 # + log10.Zostera.longest.leaf.length
@@ -5930,10 +5979,29 @@ crust.list.1 <- list(
                 # + log10.crustacean.mass.per.g.plant.imputed
                 # + log10.gastropod.mass.per.g.plant.imputed
                 # + log10.grazer.richness.site
-                , random = ~1 | Coast/Site
+                , random = ~1 | Site
                 , na.action = na.omit
-                , data = ZEN_2014_master_data_49_imputed)
-  )
+                , data = ZEN_2014_master_data_49_imputed),
+  
+  leafN.1 <- lm(log10.Leaf.PercN ~                 
+                  # Ocean
+                  + Latitude
+                  # + Coast
+                  + Temperature.C
+                  + Salinity.ppt
+                  + log10.mean.fetch
+                  + AllelicRichness
+                  + pop.density.2015
+                , data = ddply(ZEN_2014_master_data_49_imputed, "Site", summarize, 
+                               log10.Leaf.PercN = mean(log10.Leaf.PercN),
+                        # Ocean = mean(Ocean),
+                        Latitude = mean(Latitude),
+                        Temperature.C = mean(Temperature.C),
+                        Salinity.ppt = mean(Salinity.ppt),
+                        log10.mean.fetch = mean(log10.mean.fetch),
+                        AllelicRichness = mean(AllelicRichness),
+                        pop.density.2015 = mean(pop.density.2015)))
+)  
   
 
 # Run goodness-of-fit tests
@@ -5942,15 +6010,205 @@ sem.fit(
   modelList = crust.list.1, 
   data = ZEN_2014_master_data_49_imputed,
   # Additional variables who have no directed paths in the SEM but should be included in d-sep tests
-  add.vars = c("log10.Leaf.PercN.imputed"), 
+  # add.vars = c("log10.Leaf.PercN.imputed"), 
   # Define the grouping variable
-  grouping.vars = "Coast", "Site",
+  grouping.vars = c("Site"),
   # Variables that should have correlated errors
-  corr.errors = c("log10.Zostera.proxy.production.rate ~~ log10.Zostera.AG.mass.imputed")
+  corr.errors = c("log10.Zostera.shoots.core.imputed ~~ log10.Zostera.longest.leaf.length", "log10.crustacean.mass.per.g.plant.imputed ~~ log10.gastropod.mass.per.g.plant.imputed")
+  # , conditional = T # This displays all conditioning variables. Comment it out to suppress. 
 )
+#   fisher.c df p.value
+# 1     1.13  6    0.98
+# 
+#      AIC    AICc  K   n
+# 1 187.13 207.203 93 965
 
 sem.coefs(crust.list.1, ZEN_2014_master_data_49_imputed, corr.errors = c("log10.Zostera.proxy.production.rate ~~ log10.Zostera.AG.mass.imputed"), standardize = "scale")
+#                                       response                                   predictor     estimate  std.error p.value
+# 9    log10.crustacean.mass.per.g.plant.imputed           log10.Zostera.longest.leaf.length -0.174779743 0.05631161  0.0020
+# 1    log10.crustacean.mass.per.g.plant.imputed                                OceanPacific  0.672269739 0.27072358  0.0171
+# 11   log10.crustacean.mass.per.g.plant.imputed log10.periphyton.mass.per.g.zostera.imputed  0.102696950 0.04386693  0.0194
+# 8    log10.crustacean.mass.per.g.plant.imputed           log10.Zostera.shoots.core.imputed -0.072596901 0.03468466  0.0366
+# 4    log10.crustacean.mass.per.g.plant.imputed                                Salinity.ppt -0.278106270 0.14771815  0.0667
+# 2    log10.crustacean.mass.per.g.plant.imputed                                    Latitude -0.287751145 0.15789127  0.0755
+# 20 log10.periphyton.mass.per.g.zostera.imputed           log10.Zostera.longest.leaf.length  0.149803356 0.04832241  0.0020
+# 22 log10.periphyton.mass.per.g.zostera.imputed         log10.Zostera.proxy.production.rate  0.135225434 0.05549985  0.0150
+# 19 log10.periphyton.mass.per.g.zostera.imputed           log10.Zostera.shoots.core.imputed -0.106103431 0.06415681  0.0985
+# 31               log10.Zostera.AG.mass.imputed           log10.Zostera.longest.leaf.length  0.370082921 0.06680652  0.0000
+# 30               log10.Zostera.AG.mass.imputed           log10.Zostera.shoots.core.imputed  0.340066196 0.08933974  0.0002
+# 24               log10.Zostera.AG.mass.imputed                                    Latitude -0.326378122 0.11323058  0.0063
+# 23               log10.Zostera.AG.mass.imputed                                OceanPacific  0.344761776 0.18791724  0.0738
+# 41         log10.Zostera.proxy.production.rate           log10.Zostera.shoots.core.imputed  1.049049619 0.01426202  0.0000
+# 42         log10.Zostera.proxy.production.rate           log10.Zostera.longest.leaf.length  0.473723203 0.02296917  0.0000
+# 35         log10.Zostera.proxy.production.rate                                    Latitude -0.272106188 0.06291065  0.0001
+# 34         log10.Zostera.proxy.production.rate                                OceanPacific  0.245472839 0.10296976  0.0218
+# 43         log10.Zostera.proxy.production.rate                            pop.density.2015 -0.107799315 0.04737086  0.0282
+# 44           log10.Zostera.shoots.core.imputed                                OceanPacific -0.908303189 0.28375201  0.0026
+# 47           log10.Zostera.shoots.core.imputed                                Salinity.ppt -0.341224576 0.16265110  0.0421
+# 51           log10.Zostera.shoots.core.imputed                            pop.density.2015 -0.247805021 0.13657444  0.0769
+# 52           log10.Zostera.longest.leaf.length                                OceanPacific  1.188650705 0.25189399  0.0000
+# 60      ~~ log10.Zostera.proxy.production.rate            ~~ log10.Zostera.AG.mass.imputed  0.048746658         NA  0.0636
+
+
+###################################################################################
+# SEM: CRUSTACEAN BIOMASS                                                         #
+###################################################################################
+
+# Following models include geography, i.e., use only site (not Ocean or Coast) as 
+# random nesting variables.  Note: Model can have either Ocean or Coast but not both,
+# or it hangs up. 
+
+# Full model: Bottom-up
+
+gast.list.1 <- list(
   
+  gast.1 <- lme(log10.gastropod.mass.per.g.plant.imputed ~
+                   Ocean
+                 + Latitude
+                 # + Coast
+                 + Temperature.C
+                 + Salinity.ppt
+                 + log10.mean.fetch
+                 + log10.Leaf.PercN.imputed
+                 + AllelicRichness
+                 # + log10.Zostera.proxy.production.rate
+                 + log10.Zostera.shoots.core.imputed
+                 + log10.Zostera.longest.leaf.length
+                 + log10.Zostera.AG.mass.imputed
+                 + log10.periphyton.mass.per.g.zostera.imputed
+                 , random = ~1 | Site
+                 , na.action = na.omit
+                 , data = ZEN_2014_master_data_49_imputed),
+  
+  peri.1 <- lme(log10.periphyton.mass.per.g.zostera.imputed ~ 
+                  Ocean
+                + Latitude
+                # + Coast
+                + Temperature.C
+                + Salinity.ppt
+                + log10.mean.fetch
+                + log10.Leaf.PercN.imputed
+                + AllelicRichness
+                + log10.Zostera.shoots.core.imputed
+                + log10.Zostera.longest.leaf.length
+                + log10.Zostera.AG.mass.imputed
+                + log10.Zostera.proxy.production.rate
+                # + log10.mesograzer.mass.per.g.plant.imputed
+                # + log10.periphyton.mass.per.g.zostera.imputed
+                # + log10.crustacean.mass.per.g.plant.imputed
+                # + log10.gastropod.mass.per.g.plant.imputed
+                # + log10.grazer.richness.site # NOTE: left out because only relevant fo this resposne variable, and missing paths with others kill the chi square fit of SEM
+                , random = ~1 | Site
+                , na.action = na.omit
+                , data = ZEN_2014_master_data_49_imputed),
+  
+  ZAG.1 <- lme(log10.Zostera.AG.mass.imputed ~ 
+                 Ocean
+               + Latitude
+               # + Coast
+               + Temperature.C
+               + Salinity.ppt
+               + log10.mean.fetch
+               + log10.Leaf.PercN.imputed
+               + AllelicRichness
+               + log10.Zostera.shoots.core.imputed
+               + log10.Zostera.longest.leaf.length
+               + log10.Zostera.proxy.production.rate
+               + pop.density.2015
+               # + log10.Zostera.AG.mass.imputed
+               # + log10.mesograzer.mass.per.g.plant.imputed
+               # + log10.periphyton.mass.per.g.zostera.imputed
+               # + log10.crustacean.mass.per.g.plant.imputed
+               # + log10.gastropod.mass.per.g.plant.imputed
+               # + log10.grazer.richness.site
+               , random = ~1 | Site
+               , na.action = na.omit
+               , data = ZEN_2014_master_data_49_imputed),
+  
+  Zprodn.1 <- lme(log10.Zostera.proxy.production.rate ~ 
+                    Ocean
+                  + Latitude
+                  # + Coast
+                  + Temperature.C
+                  + Salinity.ppt
+                  + log10.mean.fetch
+                  + log10.Leaf.PercN.imputed
+                  + AllelicRichness
+                  + log10.Zostera.shoots.core.imputed
+                  + log10.Zostera.longest.leaf.length
+                  + pop.density.2015
+                  # + log10.Zostera.AG.mass.imputed
+                  # + log10.mesograzer.mass.per.g.plant.imputed
+                  # + log10.periphyton.mass.per.g.zostera.imputed
+                  # + log10.crustacean.mass.per.g.plant.imputed
+                  # + log10.gastropod.mass.per.g.plant.imputed
+                  # + log10.grazer.richness.site
+                  , random = ~1 | Site
+                  , na.action = na.omit
+                  , data = ZEN_2014_master_data_49_imputed),
+  
+  Zshoot.1 <- lme(log10.Zostera.shoots.core.imputed ~ 
+                    Ocean
+                  + Latitude
+                  # + Coast
+                  + Temperature.C
+                  + Salinity.ppt
+                  + log10.mean.fetch
+                  + log10.Leaf.PercN.imputed
+                  + AllelicRichness
+                  # + log10.Zostera.shoots.core.imputed
+                  # + log10.Zostera.longest.leaf.length
+                  + pop.density.2015
+                  # + log10.Zostera.AG.mass.imputed
+                  # + log10.mesograzer.mass.per.g.plant.imputed
+                  # + log10.periphyton.mass.per.g.zostera.imputed
+                  # + log10.crustacean.mass.per.g.plant.imputed
+                  # + log10.gastropod.mass.per.g.plant.imputed
+                  # + log10.grazer.richness.site
+                  , random = ~1 | Site
+                  , na.action = na.omit
+                  , data = ZEN_2014_master_data_49_imputed),
+  
+  leaf.1 <- lme(log10.Zostera.longest.leaf.length ~ # should this be lm since most predictors are site level?
+                  Ocean
+                + Latitude
+                # + Coast
+                + Temperature.C
+                + Salinity.ppt
+                + log10.mean.fetch
+                + log10.Leaf.PercN.imputed
+                + AllelicRichness
+                # + log10.Zostera.shoots.core.imputed
+                # + log10.Zostera.longest.leaf.length
+                + pop.density.2015
+                # + log10.Zostera.AG.mass.imputed
+                # + log10.mesograzer.mass.per.g.plant.imputed
+                # + log10.periphyton.mass.per.g.zostera.imputed
+                # + log10.crustacean.mass.per.g.plant.imputed
+                # + log10.gastropod.mass.per.g.plant.imputed
+                # + log10.grazer.richness.site
+                , random = ~1 | Site
+                , na.action = na.omit
+                , data = ZEN_2014_master_data_49_imputed)
+)
+
+
+# Run goodness-of-fit tests
+sem.fit(
+  # List of structured equations
+  modelList = crust.list.1, 
+  data = ZEN_2014_master_data_49_imputed,
+  # Additional variables who have no directed paths in the SEM but should be included in d-sep tests
+  # add.vars = c("log10.Leaf.PercN.imputed"), 
+  # Define the grouping variable
+  grouping.vars = c("Site"),
+  # Variables that should have correlated errors
+  corr.errors = c("log10.Zostera.shoots.core.imputed ~~ log10.Zostera.longest.leaf.length")
+  # , conditional = T # This displays all conditioning variables. Comment it out to suppress. 
+)
+# fisher.c df p.value
+# 
+sem.coefs(gast.list.1, ZEN_2014_master_data_49_imputed, corr.errors = c("log10.Zostera.proxy.production.rate ~~ log10.Zostera.AG.mass.imputed"), standardize = "scale")
 
 
 
