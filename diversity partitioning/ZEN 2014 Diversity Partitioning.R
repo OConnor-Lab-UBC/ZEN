@@ -12,6 +12,8 @@ library(vegan)
 
 setwd("C:/Users/jslef/OneDrive/Documents/GitHub/ZEN/Diversity Partitioning")
 
+load("C:/Users/jslef/OneDrive/Documents/GitHub/ZEN/diversity partitioning/zen_2014_divpart.RData")
+
 # Create function to clean-up matrix
 cleanup = function(mat, lvls) {
 
@@ -73,7 +75,7 @@ lvls = c("unique.ID", "Site", "Coast", "Ocean")
 # Check to see if unique entries in each level are listed in decreasing order
 sapply(lvls, function(x) length(unique(zen[, x])))
 
-zen = subset(zen, Site %in% unique(zen$Site)[c(1:10)])
+# zen = subset(zen, Site %in% unique(zen$Site)[c(1:10)])
 
 ##########
 
@@ -126,9 +128,9 @@ names(zen.part.list) = c("Richness", "Shannon", "Simpson")
 part.plot.list = lapply(names(zen.part.list), function(i) {
 
   # Melt data.frame
-  zen.part.melt = melt(zen.part.list[[i]], id.vars = c("level"), measure.vars = c("alpha", "gamma", "beta.add"))
+  zen.part.melt = melt(zen.part.list[[i]], id.vars = c("level"), measure.vars = c("alpha", "beta.add", "gamma"))
 
-  zen.part.melt$level = factor(zen.part.melt$level, levels = c("ID", "Site", "Coast", "Ocean"))
+  zen.part.melt$level = factor(zen.part.melt$level, levels = c("unique.ID", "Site", "Coast", "Ocean"))
 
   # Re-level for better plotting
   levels(zen.part.melt$level) = c("Plot", "Site", "Coast", "Ocean")
@@ -137,14 +139,22 @@ part.plot.list = lapply(names(zen.part.list), function(i) {
 
   # Plot results
   ggplot(zen.part.melt, aes(x = level, y = value, group = variable, shape = variable, col = variable)) +
-    geom_point(col = "grey80", size = 1) +
+    geom_point(col = "grey80", size = 1.2) +
+    geom_point(data = data.frame(
+      level = "Plot", variable = "Alpha",
+      value = subset(zen.part.melt, level == "Plot" & variable == "Alpha")$value),
+      aes(x = level, y  = value), col = "grey50", size = 4.5, shape = 15) +
     stat_summary(fun.data = "mean_cl_boot", size = 1.1, position = position_dodge(width = 1)) +
     geom_vline(xintercept = c(1.5, 2.5, 3.5), lwd = 1, col = "grey50") +
     scale_shape_manual(values = c(15:17), name = "") +
     scale_color_manual(values = c("grey50", "brown1", "black"), name = "") +
     labs(x = "", y = "", title = i) +
     theme_bw(base_size = 18) +
-    theme(axis.ticks.x = element_blank())
+    theme(
+      # panel.grid.major = element_blank(),
+      # panel.grid.minor = element_blank(),
+      axis.ticks.x = element_blank()
+          )
 
 } )
 
@@ -156,10 +166,11 @@ dev.off()
 # How does beta diversity scale with alpha and gamma diversities?
 zen.part.plot.list = lapply(names(zen.part.list), function(i) {
 
-  ggplot(zen.part.list[[i]], aes(x = alpha, y = beta.add)) +
-    geom_point(size = 3) +
-    geom_abline(slope = 1, lty = 2, lwd = 1) +
-    labs(x = "Alpha diversity", y = "Additive beta diversity", title = i) +
+  ggplot(zen.part.list[[i]], aes(x = log10(alpha), y = log10(beta.add))) +
+    geom_point(size = 3, col = "grey50") +
+    geom_abline(slope = 1, lty = 2, lwd = 1.2) +
+    labs(x = "log10(Alpha diversity)", y = "log10(Additive beta diversity)", title = i) +
+    stat_smooth(method = "lm", se = F) +
     theme_bw(base_size = 18)
 
 } )
